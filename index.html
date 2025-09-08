@@ -1,0 +1,2174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="DALORF - Challenge for Friends. Test how well you know each other with personalized quiz questions in this fun multiplayer game.">
+  <meta name="keywords" content="friends quiz, multiplayer game, friendship test, question game, social game">
+  <meta name="author" content="DALORF Team">
+  
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="DALORF - Challenge for Friends">
+  <meta property="og:description" content="Test how well you know each other with personalized quiz questions in this fun multiplayer game.">
+  <meta property="og:image" content="https://via.placeholder.com/1200x630/ff80a8/ffffff?text=DALORF">
+  
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image">
+  <meta property="twitter:title" content="DALORF - Challenge for Friends">
+  <meta property="twitter:description" content="Test how well you know each other with personalized quiz questions in this fun multiplayer game.">
+  
+  <title>DALORF - Challenge for Friends</title>
+  
+  <!-- Preconnect to external domains -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://www.gstatic.com">
+  
+  <!-- Font optimization -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Favicon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🪨</text></svg>">
+  
+  <style>
+    /* CSS Custom Properties */
+    :root {
+      --font-main: 'Montserrat', system-ui, -apple-system, sans-serif;
+      --timing-fast: 0.2s;
+      --timing-medium: 0.3s;
+      --timing-slow: 0.4s;
+      --shadow-light: 0 2px 8px rgba(0, 0, 0, 0.1);
+      --shadow-medium: 0 4px 16px rgba(0, 0, 0, 0.15);
+      --shadow-heavy: 0 8px 24px rgba(0, 0, 0, 0.2);
+      --border-radius: 8px;
+      --border-radius-large: 10px;
+      --min-touch-target: 44px;
+    }
+
+    /* Base Styles */
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: var(--font-main);
+      margin: 0;
+      padding: 0;
+      text-align: center;
+      overflow-x: hidden;
+      transition: background var(--timing-slow), color var(--timing-slow);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* Enhanced focus management */
+    *:focus-visible {
+      outline: 3px solid;
+      outline-offset: 2px;
+      border-radius: 4px;
+    }
+
+    /* Theme Styles */
+    .light-theme {
+      --bg-primary: linear-gradient(120deg, #ffd6e1 0%, #c9f6f9 100%);
+      --text-primary: #232323;
+      --text-secondary: #666;
+      --bg-card: #ffffff;
+      --bg-input: #f5f8fa;
+      --border-input: #d8e0e6;
+      --color-accent: #ff80a8;
+      --color-accent-hover: #ff5a91;
+      --color-accent-light: #ffe0ec;
+      --bg-modal: #ffffff;
+      --shadow-color: rgba(0, 0, 0, 0.1);
+      --bg-success: #e8f5e8;
+      --text-success: #388e3c;
+      --border-success: #c8e6c9;
+      --bg-error: #ffebee;
+      --text-error: #d32f2f;
+      --border-error: #ffcdd2;
+      --bg-notification: #e3f2fd;
+      --text-notification: #1976d2;
+      --border-notification: #bbdefb;
+    }
+
+    .dark-theme {
+      --bg-primary: linear-gradient(135deg, #745100 0%, #000000 100%);
+      --text-primary: #ffffff;
+      --text-secondary: #cccccc;
+      --bg-card: #222222;
+      --bg-input: #222222;
+      --border-input: #444444;
+      --color-accent: #ffd26b;
+      --color-accent-hover: #ff567d;
+      --color-accent-light: #432200;
+      --bg-modal: #222222;
+      --shadow-color: rgba(0, 0, 0, 0.3);
+      --bg-success: #1b2d1b;
+      --text-success: #4caf50;
+      --border-success: #2f5d2f;
+      --bg-error: #2d1b1b;
+      --text-error: #f44336;
+      --border-error: #5d2f2f;
+      --bg-notification: #1a1a2e;
+      --text-notification: #64b5f6;
+      --border-notification: #16213e;
+    }
+
+    .light-theme {
+      background: var(--bg-primary);
+      color: var(--text-primary);
+    }
+
+    .dark-theme {
+      background: var(--bg-primary);
+      color: var(--text-primary);
+    }
+
+    /* Typography */
+    h1 {
+      font-size: clamp(2rem, 5vw, 2.7rem);
+      font-weight: 700;
+      color: var(--text-primary);
+      margin: 0;
+      letter-spacing: 0.5px;
+      line-height: 1.15;
+    }
+
+    h3 {
+      font-size: clamp(1.1rem, 3vw, 1.35rem);
+      font-weight: 600;
+      color: var(--text-primary);
+      margin: 0 0 24px 0;
+    }
+
+    p {
+      margin: 0 0 1rem 0;
+      color: var(--text-secondary);
+    }
+
+    /* Form Elements */
+    input, select, textarea {
+      font-family: var(--font-main);
+      font-size: 1.1rem;
+      border-radius: var(--border-radius);
+      border: 1.5px solid var(--border-input);
+      background: var(--bg-input);
+      color: var(--text-primary);
+      outline: none;
+      transition: all var(--timing-medium);
+      min-height: var(--min-touch-target);
+      padding: 8px 12px;
+      width: 100%;
+      max-width: 400px;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--color-accent);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 20%, transparent);
+    }
+
+    /* Buttons */
+    button {
+      font-family: var(--font-main);
+      font-size: 1.1rem;
+      border-radius: var(--border-radius);
+      background: var(--color-accent);
+      color: #ffffff;
+      font-weight: 600;
+      border: none;
+      padding: 12px 24px;
+      margin: 8px 6px;
+      cursor: pointer;
+      transition: all var(--timing-medium);
+      letter-spacing: 0.4px;
+      min-height: var(--min-touch-target);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    button:hover:not(:disabled) {
+      background: var(--color-accent-hover);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-medium);
+    }
+
+    button:active:not(:disabled) {
+      transform: translateY(0);
+    }
+
+    button:disabled {
+      background: #cccccc;
+      color: #888888;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    /* Cards and Containers */
+    .question-block {
+      background: var(--bg-card);
+      color: var(--text-primary);
+      box-shadow: var(--shadow-light);
+      border-radius: var(--border-radius-large);
+      padding: 20px;
+      margin: 20px auto;
+      max-width: 500px;
+      text-align: left;
+      position: relative;
+      transition: all var(--timing-medium);
+    }
+
+    .question-block:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-medium);
+    }
+
+    .main-question-input {
+      background: #fff6c1 !important;
+      border: 2px solid #ffb700 !important;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+
+    .dark-theme .main-question-input {
+      background: #4c3700 !important;
+      border: 2px solid var(--color-accent) !important;
+    }
+
+    .option-input {
+      margin-bottom: 8px;
+      width: 100% !important;
+      max-width: 100% !important;
+    }
+
+    /* Layout Components */
+    .section {
+      animation: fadeIn 0.6s ease;
+      padding: 20px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .container {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    /* Theme Switch */
+    .theme-switch {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: var(--color-accent-light);
+      color: var(--color-accent);
+      font-size: 1.5rem;
+      border-radius: 50%;
+      border: none;
+      padding: 12px;
+      cursor: pointer;
+      transition: all var(--timing-fast);
+      z-index: 1000;
+      min-height: var(--min-touch-target);
+      min-width: var(--min-touch-target);
+    }
+
+    .theme-switch:hover {
+      background: var(--color-accent);
+      color: #ffffff;
+      transform: scale(1.1);
+    }
+
+    /* Utility Classes */
+    .hidden { display: none !important; }
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    /* Messages and Notifications */
+    .error-message {
+      color: var(--text-error);
+      background: var(--bg-error);
+      border: 1px solid var(--border-error);
+      padding: 12px 16px;
+      border-radius: var(--border-radius);
+      margin: 8px 0;
+      font-size: 0.9rem;
+    }
+
+    .success-message {
+      color: var(--text-success);
+      background: var(--bg-success);
+      border: 1px solid var(--border-success);
+      padding: 12px 16px;
+      border-radius: var(--border-radius);
+      margin: 8px 0;
+      font-size: 0.9rem;
+    }
+
+    .notification {
+      background: var(--bg-notification);
+      color: var(--text-notification);
+      border: 2px solid var(--border-notification);
+      padding: 16px 20px;
+      border-radius: var(--border-radius);
+      margin: 10px auto;
+      max-width: 500px;
+      animation: slideIn 0.5s ease;
+      box-shadow: var(--shadow-medium);
+    }
+
+    .room-info {
+      background: color-mix(in srgb, var(--color-accent) 10%, transparent);
+      color: var(--color-accent);
+      border: 2px solid var(--color-accent);
+      padding: 16px 20px;
+      border-radius: var(--border-radius);
+      margin: 10px auto;
+      max-width: 500px;
+      font-weight: 600;
+    }
+
+    .loading-indicator {
+      color: var(--color-accent);
+      font-size: 1.1rem;
+      margin: 20px 0;
+      animation: pulse-loading 1.2s infinite;
+    }
+
+    .timer {
+      color: var(--color-accent);
+      font-weight: 700;
+    }
+
+    .timer.low-time {
+      animation: pulse 1s infinite;
+      color: #ff5722;
+    }
+
+    /* Modal Styles */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 2000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(4px);
+    }
+
+    .modal-content {
+      background: var(--bg-modal);
+      color: var(--text-primary);
+      margin: 5% auto;
+      padding: 30px;
+      border-radius: var(--border-radius-large);
+      width: 90%;
+      max-width: 600px;
+      max-height: 80vh;
+      overflow-y: auto;
+      position: relative;
+      animation: fadeInUp 0.3s ease;
+      box-shadow: var(--shadow-heavy);
+    }
+
+    .close {
+      color: var(--text-secondary);
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+      line-height: 1;
+      transition: color var(--timing-fast);
+    }
+
+    .close:hover, .close:focus {
+      color: var(--text-primary);
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes slideIn {
+      from { transform: translateX(-100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    @keyframes pulse-loading {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    @keyframes confetti-fall {
+      0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+    }
+
+    /* Confetti */
+    .confetti {
+      position: fixed;
+      width: 10px;
+      height: 10px;
+      background: var(--color-accent);
+      animation: confetti-fall 3s linear infinite;
+      z-index: 1000;
+      pointer-events: none;
+    }
+
+    .confetti:nth-child(2n) { background: #4caf50; }
+    .confetti:nth-child(3n) { background: #2196f3; }
+    .confetti:nth-child(4n) { background: #ff9800; }
+    .confetti:nth-child(5n) { background: #9c27b0; }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      h1 { font-size: 2rem; }
+      h3 { font-size: 1.2rem; }
+      
+      .question-block {
+        margin: 16px 8px;
+        padding: 16px;
+      }
+      
+      .theme-switch {
+        top: 10px;
+        right: 10px;
+        font-size: 1.3rem;
+        padding: 10px;
+      }
+      
+      .modal-content {
+        margin: 2% auto;
+        width: 95%;
+        padding: 20px;
+      }
+      
+      input, select, button {
+        font-size: 1rem;
+      }
+      
+      .section {
+        padding: 10px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .question-block {
+        margin: 12px 4px;
+        padding: 12px;
+      }
+      
+      button {
+        padding: 10px 16px;
+        margin: 4px 2px;
+      }
+    }
+
+    /* Print Styles */
+    @media print {
+      .theme-switch, button:not(.print-friendly) {
+        display: none;
+      }
+      
+      .modal {
+        position: static;
+        background: none;
+      }
+      
+      .modal-content {
+        box-shadow: none;
+        border: 1px solid #ccc;
+      }
+    }
+
+    /* High Contrast Mode */
+    @media (prefers-contrast: high) {
+      :root {
+        --shadow-light: 0 2px 4px rgba(0, 0, 0, 0.5);
+        --shadow-medium: 0 4px 8px rgba(0, 0, 0, 0.5);
+      }
+      
+      button {
+        border: 2px solid currentColor;
+      }
+    }
+
+    /* Reduced Motion */
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+
+    /* Additional Components */
+    .about-name-btn {
+      background: transparent;
+      color: var(--color-accent);
+      border: none;
+      font-size: 1.2rem;
+      cursor: pointer;
+      opacity: 0.7;
+      transition: all var(--timing-fast);
+      padding: 8px;
+      border-radius: 50%;
+      min-height: 40px;
+      min-width: 40px;
+    }
+
+    .about-name-btn:hover {
+      opacity: 1;
+      background: var(--color-accent-light);
+      transform: scale(1.1);
+    }
+
+    .automated-questions, .question-count-selector {
+      background: color-mix(in srgb, var(--color-accent) 5%, transparent);
+      border: 2px solid var(--color-accent);
+      border-radius: var(--border-radius-large);
+      padding: 20px;
+      margin: 20px auto;
+      max-width: 500px;
+      text-align: left;
+    }
+
+    .intensity-selector label {
+      display: block;
+      margin: 10px 0;
+      cursor: pointer;
+      font-weight: 500;
+      transition: color var(--timing-fast);
+    }
+
+    .intensity-selector label:hover {
+      color: var(--color-accent);
+    }
+
+    .edit-btn, .delete-btn, .pause-edit-btn {
+      font-size: 0.9rem;
+      padding: 6px 12px;
+      margin: 4px;
+      min-height: 36px;
+    }
+
+    .edit-btn {
+      background: #ffa726;
+      color: #fff;
+    }
+
+    .delete-btn {
+      background: #ef5350;
+      color: #fff;
+    }
+
+    .pause-edit-btn {
+      background: #66bb6a;
+      color: #fff;
+    }
+
+    /* Focus trap for modals */
+    .modal[aria-hidden="false"] {
+      display: block;
+    }
+
+    /* Loading skeleton */
+    .skeleton {
+      background: linear-gradient(90deg, 
+        color-mix(in srgb, var(--color-accent) 10%, transparent) 25%, 
+        color-mix(in srgb, var(--color-accent) 20%, transparent) 50%, 
+        color-mix(in srgb, var(--color-accent) 10%, transparent) 75%);
+      background-size: 200% 100%;
+      animation: loading 1.5s infinite;
+    }
+
+    @keyframes loading {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+  </style>
+  
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+  
+  <script>
+    // IMPORTANT SECURITY NOTE: 
+    // Firebase config is exposed here for demo purposes.
+    // In production, implement proper Firebase security rules
+    // and consider using environment variables or server-side configuration.
+    const firebaseConfig = {
+      apiKey: "AIzaSyAvaDuz1OCKYuDfieZiHynhYkur9KOPY00",
+      authDomain: "birdview-025802.firebaseapp.com",
+      databaseURL: "https://birdview-025802-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "birdview-025802",
+      storageBucket: "birdview-025802.firebasestorage.app",
+      messagingSenderId: "607338097846",
+      appId: "1:607338097846:web:2ac36ce8f1261664180a17",
+      measurementId: "G-Z08YPG773L"
+    };
+    
+    // Initialize Firebase
+    try {
+      firebase.initializeApp(firebaseConfig);
+      window.db = firebase.database();
+    } catch (error) {
+      console.error('Firebase initialization failed:', error);
+      // Fallback for offline mode or Firebase connection issues
+      window.db = null;
+    }
+  </script>
+</head>
+
+<body class="dark-theme">
+  <!-- ARIA live regions for screen reader announcements -->
+  <div id="announcements" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+  <div id="timer-announcements" class="sr-only" aria-live="assertive" aria-atomic="true"></div>
+  
+  <!-- Skip link for keyboard navigation -->
+  <a href="#main-content" class="sr-only" style="position: absolute; left: -10000px; top: auto; width: 1px; height: 1px; overflow: hidden;">Skip to main content</a>
+  
+  <!-- Notifications container -->
+  <div id="notifications-container" aria-live="polite"></div>
+
+  <!-- Theme switch button -->
+  <button class="theme-switch" id="theme-switch" aria-label="Switch between light and dark theme" title="Toggle theme">
+    🌞
+  </button>
+  
+  <!-- Main content -->
+  <main id="main-content" role="main" class="container">
+    <!-- Header -->
+    <header style="text-align: center; margin-bottom: 30px;">
+      <div style="display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 8px; flex-wrap: wrap;">
+        <h1>🪨 DALORF 🐟</h1>
+        <button id="about-name" class="about-name-btn" 
+                title="Learn about the name DALORF" 
+                aria-label="Learn about the name DALORF"
+                aria-describedby="about-description">
+          ℹ️
+        </button>
+      </div>
+      <p style="font-size: 1.3rem; margin: 0; font-weight: 600; opacity: 0.9;">Challenge for Friends</p>
+      <p id="about-description" class="sr-only">Click to learn about the story behind the name DALORF</p>
+    </header>
+
+    <!-- Room info display -->
+    <section id="room-info-display" class="room-info hidden" role="status" aria-live="polite">
+      <div id="room-details"></div>
+    </section>
+
+    <!-- Authentication Section -->
+    <section id="auth-section" class="section" aria-labelledby="auth-heading">
+      <h3 id="auth-heading">Join or Create Game</h3>
+      <p>Test how well you know each other! Create questions and see if your friend can answer them correctly.</p>
+      
+      <button onclick="showInstructions()" style="margin-bottom: 20px;" aria-describedby="instructions-help">
+        📖 How to Play
+      </button>
+      <p id="instructions-help" class="sr-only">Opens detailed game instructions</p>
+      
+      <div style="max-width: 400px; margin: 0 auto;">
+        <div style="margin-bottom: 16px;">
+          <label for="playerName" class="sr-only">Your Name</label>
+          <input id="playerName" 
+                 placeholder="Your Name" 
+                 aria-label="Enter your name"
+                 aria-required="true"
+                 autocomplete="name"
+                 maxlength="50">
+        </div>
+        
+        <div id="auth-error" class="error-message hidden" role="alert"></div>
+        
+        <div style="margin-bottom: 16px;">
+          <label for="roomCode" class="sr-only">Room Code (optional)</label>
+          <input id="roomCode" 
+                 placeholder="Room Code (optional - leave empty for auto)" 
+                 aria-label="Room code - leave empty to auto-generate"
+                 autocomplete="off"
+                 style="text-transform: uppercase;"
+                 maxlength="10">
+        </div>
+        
+        <div id="room-error" class="error-message hidden" role="alert"></div>
+        
+        <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+          <button onclick="createRoom()" aria-describedby="create-help">Create Room</button>
+          <button onclick="joinRoom()" aria-describedby="join-help">Join Room</button>
+        </div>
+        
+        <p id="create-help" class="sr-only">Creates a new game room and generates a room code</p>
+        <p id="join-help" class="sr-only">Joins an existing game room using the room code</p>
+      </div>
+    </section>
+
+    <!-- Game Setup Section -->
+    <section id="question-setup-section" class="section hidden" aria-labelledby="setup-heading">
+      <h3 id="setup-heading">Game Setup</h3>
+      <div class="question-count-selector">
+        <h4>Number of Questions per Player:</h4>
+        <label for="questionCount" class="sr-only">Choose number of questions</label>
+        <select id="questionCount" aria-label="Number of questions per player">
+          <option value="3">3 Questions</option>
+          <option value="5" selected>5 Questions</option>
+          <option value="7">7 Questions</option>
+          <option value="10">10 Questions</option>
+        </select>
+        <br><br>
+        <button onclick="startGameSetup()" id="start-setup-btn">Start Creating Questions</button>
+      </div>
+    </section>
+
+    <!-- Question Creation Section -->
+    <section id="question-section" class="section hidden" aria-labelledby="questions-heading">
+      <h3 id="questions-heading">Add Your Questions</h3>
+      <p>Create personal questions that only someone who knows you well could answer!</p>
+      
+      <!-- Automated Questions Helper -->
+      <div class="automated-questions">
+        <h4>Need Question Ideas? Try These:</h4>
+        <fieldset class="intensity-selector">
+          <legend class="sr-only">Choose question intensity level</legend>
+          <label><input type="radio" name="intensity" value="light" checked> Light (Basic preferences)</label>
+          <label><input type="radio" name="intensity" value="medium"> Medium (Personal experiences)</label>
+          <label><input type="radio" name="intensity" value="deep"> Deep (Values & dreams)</label>
+        </fieldset>
+        <button onclick="generateAutomatedQuestions()">Get Question Suggestions</button>
+        <div id="suggested-questions" aria-live="polite"></div>
+      </div>
+      
+      <div id="questions-container" role="group" aria-label="Your questions"></div>
+      <div id="question-error" class="error-message hidden" role="alert"></div>
+      
+      <button onclick="addQuestion()" aria-describedby="add-question-help">+ Add Question</button>
+      <p id="add-question-help" class="sr-only">Adds a new question form to fill out</p>
+      
+      <br>
+      <button onclick="submitQuestions()" id="submit-btn">Submit Questions</button>
+      
+      <div id="review-timer-visible" style="display:none;" role="timer" aria-live="assertive">
+        ⏳ Reflection Time Left: <span id="timer-visible" class="timer"></span>
+        <button onclick="pauseAndEdit()" id="pause-edit-btn" class="pause-edit-btn">Pause & Edit</button>
+      </div>
+      
+      <div id="state-transition" class="notification hidden" role="status"></div>
+    </section>
+
+    <!-- Waiting Section -->
+    <section id="waiting-section" class="section hidden" aria-labelledby="waiting-heading">
+      <h3 id="waiting-heading" class="sr-only">Waiting for other player</h3>
+      <div class="loading-indicator" role="status" aria-live="polite">
+        ⏳ Waiting for the other player to submit questions...
+        <span id="wait-timer" class="timer"></span>
+      </div>
+    </section>
+
+    <!-- Answer Section -->
+    <section id="answer-section" class="section hidden" aria-labelledby="answer-heading">
+      <h3 id="answer-heading">Answer Your Friend's Questions</h3>
+      <div id="answer-container" role="group" aria-label="Questions to answer"></div>
+      <div id="answer-error" class="error-message hidden" role="alert"></div>
+      <button onclick="submitAnswers()">Submit Answers</button>
+      <div id="waiting-answers" class="hidden loading-indicator" role="status">⏳ Loading questions...</div>
+    </section>
+
+    <!-- Results Section -->
+    <section id="result-section" class="section hidden" aria-labelledby="results-heading">
+      <h3 id="results-heading">Results</h3>
+      <div id="result-output" role="region" aria-label="Game results"></div>
+      <button onclick="location.reload()" aria-describedby="play-again-help">Play Again</button>
+      <p id="play-again-help" class="sr-only">Refreshes the page to start a new game</p>
+    </section>
+  </main>
+
+  <!-- About Name Modal -->
+  <div id="about-name-modal" class="modal" role="dialog" aria-labelledby="about-modal-title" aria-hidden="true">
+    <div class="modal-content">
+      <button class="close" onclick="closeAboutName()" aria-label="Close about dialog">&times;</button>
+      <h2 id="about-modal-title">🪨 About DALORF 🐟</h2>
+      
+      <p><strong>DALORF</strong> is a special combination of names that represents the friendship that inspired this game:</p>
+      
+      <div style="background: color-mix(in srgb, var(--color-accent) 10%, transparent); padding: 20px; border-radius: var(--border-radius); margin: 20px 0; border-left: 4px solid var(--color-accent);">
+        <p><strong>DA</strong> - From some names of the female friend who inspired this creation</p>
+        <p><strong>LO</strong> - From some of the creator's names</p>
+        <p><strong>R, F</strong> - Rock & Fish - the nicknames we often call ourselves</p>
+      </div>
+      
+      <p>This game was born from a real friendship where we wanted to test how well we truly know each other. The name DALORF carries that personal connection and celebrates the bond between Rock and Fish.</p>
+      
+      <p style="font-style: italic; text-align: center; margin-top: 24px;">
+        "Every great friendship deserves its own challenge!" 💖
+      </p>
+    </div>
+  </div>
+
+  <!-- Instructions Modal -->
+  <div id="instructions-modal" class="modal" role="dialog" aria-labelledby="instructions-modal-title" aria-hidden="true">
+    <div class="modal-content">
+      <button class="close" onclick="closeInstructions()" aria-label="Close instructions dialog">&times;</button>
+      <h2 id="instructions-modal-title">🎯 How to Play DALORF</h2>
+      
+      <section>
+        <h3>🚀 Getting Started</h3>
+        <p><strong>Create a Room:</strong> Enter your name and click "Create Room" to get a unique room code.</p>
+        <p><strong>Join a Room:</strong> Enter your name and the room code your friend shared, then click "Join Room".</p>
+      </section>
+      
+      <section>
+        <h3>❓ Question Phase</h3>
+        <p><strong>Create Questions:</strong> Write personal questions about yourself with 4 multiple choice options.</p>
+        <p><strong>Get Help:</strong> Use automated question suggestions with different intensity levels.</p>
+        <p><strong>Examples:</strong> "What's my favorite pizza topping?", "Where did I go on my last vacation?", "What's my biggest fear?"</p>
+        <p><strong>Review Time:</strong> You'll have 1 minute to review and edit your questions before they're locked in.</p>
+      </section>
+      
+      <section>
+        <h3>🎯 Answer Phase</h3>
+        <p><strong>Answer Questions:</strong> Try to answer your friend's questions about them.</p>
+        <p><strong>See Results:</strong> Find out how well you know each other!</p>
+      </section>
+      
+      <section>
+        <h3>🏆 Scoring</h3>
+        <ul style="text-align: left; max-width: 500px; margin: 0 auto;">
+          <li><strong>Perfect (100%):</strong> 💎 Perfect Harmony</li>
+          <li><strong>Excellent (90-99%):</strong> 💖 Soulmate Energy</li>
+          <li><strong>Great (80-89%):</strong> 😊 Close Confidant</li>
+          <li><strong>Good (70-79%):</strong> 🤝 Good Friends</li>
+          <li><strong>Fair (60-69%):</strong> 🙂 Getting There</li>
+          <li><strong>Okay (50-59%):</strong> 😐 Friendly Guesswork</li>
+          <li><strong>Poor (40-49%):</strong> 😅 We Need to Talk</li>
+          <li><strong>Very Poor (30-39%):</strong> 😬 Strangers Much?</li>
+          <li><strong>Terrible (20-29%):</strong> 🤔 Do You Even Know Me?</li>
+          <li><strong>Disaster (10-19%):</strong> 😱 Who Are You?</li>
+          <li><strong>Complete Miss (0-9%):</strong> 👻 Ghost Friends</li>
+        </ul>
+      </section>
+      
+      <p style="margin-top: 24px;"><em>Tip: Make questions challenging but fair - the goal is to discover how well you know each other!</em></p>
+    </div>
+  </div>
+
+  <script>
+    'use strict';
+
+    // Performance monitoring
+    const perfStart = performance.now();
+
+    // App Configuration
+    const APP_CONFIG = {
+      REVIEW_TIME_MS: 60 * 1000, // 1 minute
+      MAX_QUESTIONS_MULTIPLIER: 2,
+      CLEANUP_DELAY_MS: 8000,
+      NOTIFICATION_DURATION_MS: 4000,
+      MAX_NAME_LENGTH: 50,
+      MAX_ROOM_CODE_LENGTH: 10,
+      DEBOUNCE_DELAY_MS: 300
+    };
+
+    // Game States
+    const GAME_STATES = {
+      SETUP: 'setup',
+      CREATING_QUESTIONS: 'creating_questions', 
+      QUESTIONS_SUBMITTED: 'questions_submitted',
+      REVIEW_COMPLETED: 'review_completed',
+      BOTH_QUESTIONS_READY: 'both_questions_ready',
+      ANSWERING: 'answering',
+      COMPLETED: 'completed'
+    };
+
+    // Automated Questions Database
+    const AUTOMATED_QUESTIONS = {
+      light: [
+        { q: "What's my favorite color?", opts: ["Blue", "Red", "Green", "Purple"] },
+        { q: "What's my favorite food?", opts: ["Pizza", "Burger", "Pasta", "Sushi"] },
+        { q: "What's my favorite season?", opts: ["Spring", "Summer", "Fall", "Winter"] },
+        { q: "What's my favorite movie genre?", opts: ["Action", "Comedy", "Romance", "Horror"] },
+        { q: "What's my favorite drink?", opts: ["Coffee", "Tea", "Soda", "Water"] },
+        { q: "What's my favorite animal?", opts: ["Dog", "Cat", "Bird", "Fish"] },
+        { q: "What's my preferred weather?", opts: ["Sunny", "Rainy", "Cloudy", "Snowy"] },
+        { q: "What's my favorite day of the week?", opts: ["Monday", "Wednesday", "Friday", "Saturday"] }
+      ],
+      medium: [
+        { q: "What's my biggest fear?", opts: ["Heights", "Spiders", "Public speaking", "Dark"] },
+        { q: "Where did I go on my last vacation?", opts: ["Beach", "Mountains", "City", "Countryside"] },
+        { q: "What's my dream job?", opts: ["Teacher", "Doctor", "Artist", "Engineer"] },
+        { q: "What makes me happiest?", opts: ["Friends", "Family", "Achievements", "Hobbies"] },
+        { q: "What's my biggest pet peeve?", opts: ["Loud chewing", "Being late", "Messy spaces", "Interrupting"] },
+        { q: "What's my favorite childhood memory?", opts: ["Birthday party", "Family trip", "School event", "Holiday"] },
+        { q: "What sport did I play/want to play?", opts: ["Soccer", "Basketball", "Tennis", "Swimming"] },
+        { q: "What's my guilty pleasure?", opts: ["Reality TV", "Junk food", "Online shopping", "Social media"] }
+      ],
+      deep: [
+        { q: "What's my biggest life goal?", opts: ["Career success", "Family happiness", "Personal growth", "Making a difference"] },
+        { q: "What do I value most in friendship?", opts: ["Loyalty", "Honesty", "Fun", "Support"] },
+        { q: "What's my biggest regret?", opts: ["Not taking risks", "Hurting someone", "Missing opportunities", "Being too cautious"] },
+        { q: "What motivates me the most?", opts: ["Recognition", "Personal satisfaction", "Helping others", "Competition"] },
+        { q: "What's my philosophy on life?", opts: ["Live each day fully", "Plan for the future", "Help others", "Follow your dreams"] },
+        { q: "What would I change about myself?", opts: ["Be more confident", "Be more patient", "Be more organized", "Be more social"] },
+        { q: "What's my definition of success?", opts: ["Financial stability", "Personal happiness", "Impact on others", "Achieving goals"] },
+        { q: "What's my biggest strength?", opts: ["Empathy", "Determination", "Creativity", "Leadership"] }
+      ]
+    };
+
+    // Global State
+    let gameState = {
+      playerName: null,
+      roomCode: null,
+      otherPlayerName: null,
+      requiredQuestionCount: 5,
+      reviewEndTime: null,
+      reviewInterval: null,
+      isReviewPaused: false,
+      reviewCompleted: false,
+      gameStateListener: null,
+      waitStartTime: null
+    };
+
+    // Utility Functions
+    const utils = {
+      debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+          const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+          };
+          clearTimeout(timeout);
+          timeout = setTimeout(later, wait);
+        };
+      },
+
+      sanitizeInput(input, maxLength = 100) {
+        return input.trim().substring(0, maxLength);
+      },
+
+      generateRoomCode() {
+        return Math.random().toString(36).substring(2, 8).toUpperCase();
+      },
+
+      formatTime(ms) {
+        const minutes = Math.floor(ms / 60000);
+        const seconds = Math.floor((ms % 60000) / 1000);
+        return `${minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
+      },
+
+      announceToScreenReader(message, urgent = false) {
+        const announceEl = document.getElementById(urgent ? 'timer-announcements' : 'announcements');
+        announceEl.textContent = message;
+        setTimeout(() => announceEl.textContent = '', 1000);
+      },
+
+      showError(elementId, message) {
+        const errorEl = document.getElementById(elementId);
+        if (!errorEl) return;
+        
+        errorEl.textContent = message;
+        errorEl.className = 'error-message';
+        errorEl.classList.remove('hidden');
+        
+        // Auto-hide after 5 seconds
+        setTimeout(() => {
+          if (errorEl.textContent === message) {
+            errorEl.classList.add('hidden');
+          }
+        }, 5000);
+      },
+
+      showSuccess(elementId, message) {
+        const errorEl = document.getElementById(elementId);
+        if (!errorEl) return;
+        
+        errorEl.textContent = message;
+        errorEl.className = 'success-message';
+        errorEl.classList.remove('hidden');
+        
+        setTimeout(() => {
+          if (errorEl.textContent === message) {
+            errorEl.classList.add('hidden');
+            errorEl.className = 'error-message';
+          }
+        }, 3000);
+      },
+
+      showNotification(message, duration = APP_CONFIG.NOTIFICATION_DURATION_MS) {
+        const container = document.getElementById('notifications-container');
+        const notification = document.createElement('div');
+        notification.className = 'notification';
+        notification.textContent = message;
+        notification.setAttribute('role', 'status');
+        container.appendChild(notification);
+        
+        setTimeout(() => {
+          if (notification.parentNode) {
+            notification.remove();
+          }
+        }, duration);
+      }
+    };
+
+    // Theme Management
+    const themeManager = {
+      init() {
+        const savedTheme = localStorage.getItem('dalorf-theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const theme = savedTheme || (prefersDark ? 'dark' : 'light');
+        
+        this.setTheme(theme);
+        this.setupMediaQuery();
+      },
+
+      setTheme(theme) {
+        const body = document.body;
+        const themeBtn = document.getElementById('theme-switch');
+        
+        if (theme === 'light') {
+          body.className = 'light-theme';
+          themeBtn.textContent = '🌙';
+          themeBtn.setAttribute('aria-label', 'Switch to dark theme');
+        } else {
+          body.className = 'dark-theme';
+          themeBtn.textContent = '🌞';
+          themeBtn.setAttribute('aria-label', 'Switch to light theme');
+        }
+        
+        localStorage.setItem('dalorf-theme', theme);
+      },
+
+      toggle() {
+        const isDark = document.body.classList.contains('dark-theme');
+        this.setTheme(isDark ? 'light' : 'dark');
+      },
+
+      setupMediaQuery() {
+        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+        mediaQuery.addEventListener('change', (e) => {
+          if (!localStorage.getItem('dalorf-theme')) {
+            this.setTheme(e.matches ? 'dark' : 'light');
+          }
+        });
+      }
+    };
+
+    // Modal Management
+    const modalManager = {
+      show(modalId) {
+        const modal = document.getElementById(modalId);
+        if (!modal) return;
+        
+        modal.style.display = 'block';
+        modal.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+        
+        // Focus management
+        const firstFocusable = modal.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+        if (firstFocusable) {
+          firstFocusable.focus();
+        }
+        
+        // Trap focus
+        this.trapFocus(modal);
+      },
+
+      hide(modalId) {
+        const modal = document.getElementById(modalId);
+        if (!modal) return;
+        
+        modal.style.display = 'none';
+        modal.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = 'auto';
+      },
+
+      trapFocus(modal) {
+        const focusableElements = modal.querySelectorAll(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
+        const firstFocusable = focusableElements[0];
+        const lastFocusable = focusableElements[focusableElements.length - 1];
+
+        modal.addEventListener('keydown', (e) => {
+          if (e.key === 'Tab') {
+            if (e.shiftKey) {
+              if (document.activeElement === firstFocusable) {
+                lastFocusable.focus();
+                e.preventDefault();
+              }
+            } else {
+              if (document.activeElement === lastFocusable) {
+                firstFocusable.focus();
+                e.preventDefault();
+              }
+            }
+          }
+        });
+      }
+    };
+
+    // Database Operations
+    const dbManager = {
+      async updateGameState(newState, additionalData = {}) {
+        if (!window.db) {
+          console.warn('Database not available');
+          return Promise.resolve();
+        }
+
+        const stateData = {
+          state: newState,
+          player: gameState.playerName,
+          timestamp: Date.now(),
+          ...additionalData
+        };
+        
+        try {
+          await window.db.ref(`rooms/${gameState.roomCode}/gameState/${gameState.playerName}`).set(stateData);
+        } catch (error) {
+          console.error('Failed to update game state:', error);
+          throw error;
+        }
+      },
+
+      listenForGameStateChanges() {
+        if (!window.db) return;
+        
+        if (gameState.gameStateListener) {
+          gameState.gameStateListener.off();
+        }
+        
+        gameState.gameStateListener = window.db.ref(`rooms/${gameState.roomCode}/gameState`);
+        gameState.gameStateListener.on('value', (snapshot) => {
+          const states = snapshot.val();
+          if (!states) return;
+          
+          const players = Object.keys(states);
+          const otherPlayer = players.find(p => p !== gameState.playerName);
+          
+          if (otherPlayer && !gameState.otherPlayerName) {
+            gameState.otherPlayerName = otherPlayer;
+            this.updateRoomInfo();
+          }
+          
+          // Check for transition when both players completed review
+          if (players.length === 2) {
+            const allStates = Object.values(states);
+            const bothReviewCompleted = allStates.every(s => 
+              s.state === GAME_STATES.REVIEW_COMPLETED || 
+              s.state === GAME_STATES.BOTH_QUESTIONS_READY ||
+              s.state === GAME_STATES.ANSWERING ||
+              s.state === GAME_STATES.COMPLETED
+            );
+            
+            if (bothReviewCompleted) {
+              const currentState = states[gameState.playerName]?.state;
+              if (currentState === GAME_STATES.REVIEW_COMPLETED) {
+                this.updateGameState(GAME_STATES.BOTH_QUESTIONS_READY).then(() => {
+                  gameManager.transitionToAnswering();
+                });
+              } else if (currentState === GAME_STATES.BOTH_QUESTIONS_READY) {
+                const otherState = states[otherPlayer]?.state;
+                if (otherState === GAME_STATES.BOTH_QUESTIONS_READY || otherState === GAME_STATES.ANSWERING) {
+                  gameManager.transitionToAnswering();
+                }
+              }
+            }
+          }
+        });
+      },
+
+      updateRoomInfo() {
+        const roomInfo = document.getElementById('room-info-display');
+        const roomDetails = document.getElementById('room-details');
+        
+        let content = `🏠 Room: ${gameState.roomCode} | 👤 You: ${gameState.playerName}`;
+        if (gameState.otherPlayerName) {
+          content += ` | 👥 Joined: ${gameState.otherPlayerName}`;
+        }
+        
+        roomDetails.textContent = content;
+        roomInfo.classList.remove('hidden');
+      }
+    };
+
+    // Game Logic
+    const gameManager = {
+      async createRoom() {
+        const playerNameInput = document.getElementById('playerName');
+        const roomCodeInput = document.getElementById('roomCode');
+        
+        gameState.playerName = utils.sanitizeInput(playerNameInput.value, APP_CONFIG.MAX_NAME_LENGTH);
+        const customCode = utils.sanitizeInput(roomCodeInput.value, APP_CONFIG.MAX_ROOM_CODE_LENGTH).toUpperCase();
+        
+        if (!gameState.playerName) {
+          utils.showError('auth-error', 'Please enter your name');
+          playerNameInput.focus();
+          return;
+        }
+        
+        gameState.roomCode = customCode || utils.generateRoomCode();
+        roomCodeInput.value = gameState.roomCode;
+        
+        try {
+          if (!window.db) {
+            throw new Error('Database not available');
+          }
+
+          // Set up room with creator info
+          await window.db.ref(`rooms/${gameState.roomCode}/settings`).set({
+            creator: gameState.playerName,
+            createdAt: Date.now()
+          });
+          
+          // Initialize game state
+          await dbManager.updateGameState(GAME_STATES.SETUP);
+          dbManager.listenForGameStateChanges();
+          
+          dbManager.updateRoomInfo();
+          utils.showSuccess('auth-error', `Room created: ${gameState.roomCode} - Share this code with your friend!`);
+          utils.announceToScreenReader(`Room created with code ${gameState.roomCode}`);
+          
+          // Move to game setup
+          this.showSection('question-setup-section');
+        } catch (error) {
+          console.error('Error creating room:', error);
+          utils.showError('auth-error', 'Failed to create room. Please check your connection and try again.');
+        }
+      },
+
+      async joinRoom() {
+        const playerNameInput = document.getElementById('playerName');
+        const roomCodeInput = document.getElementById('roomCode');
+        
+        gameState.playerName = utils.sanitizeInput(playerNameInput.value, APP_CONFIG.MAX_NAME_LENGTH);
+        gameState.roomCode = utils.sanitizeInput(roomCodeInput.value, APP_CONFIG.MAX_ROOM_CODE_LENGTH).toUpperCase();
+        
+        if (!gameState.playerName) {
+          utils.showError('auth-error', 'Please enter your name');
+          playerNameInput.focus();
+          return;
+        }
+        
+        if (!gameState.roomCode) {
+          utils.showError('room-error', 'Please enter the room code');
+          roomCodeInput.focus();
+          return;
+        }
+        
+        try {
+          if (!window.db) {
+            throw new Error('Database not available');
+          }
+
+          // Check if room exists
+          const snapshot = await window.db.ref(`rooms/${gameState.roomCode}/settings`).once('value');
+          
+          if (snapshot.exists()) {
+            const settings = snapshot.val();
+            const creatorName = settings.creator;
+            
+            // Initialize game state for joiner
+            await dbManager.updateGameState(GAME_STATES.SETUP);
+            dbManager.listenForGameStateChanges();
+            
+            utils.showNotification(`${gameState.playerName} joined room ${gameState.roomCode}!`);
+            dbManager.updateRoomInfo();
+            utils.showSuccess('room-error', `Joined room: ${gameState.roomCode}`);
+            utils.announceToScreenReader(`Joined room ${gameState.roomCode}`);
+            
+            // Check if game setup is already complete
+            if (settings.requiredQuestionCount) {
+              gameState.requiredQuestionCount = settings.requiredQuestionCount;
+              this.enterQuestionMode();
+            } else {
+              this.showSection('waiting-section');
+              document.getElementById('waiting-section').innerHTML = 
+                '<div class="loading-indicator">⏳ Waiting for room creator to set up the game...</div>';
+              this.listenForRoomUpdates();
+            }
+          } else {
+            utils.showError('room-error', 'Room not found. Please check the code.');
+          }
+        } catch (error) {
+          console.error('Error joining room:', error);
+          utils.showError('room-error', 'Failed to join room. Please check your connection and try again.');
+        }
+      },
+
+      listenForRoomUpdates() {
+        if (!window.db) return;
+        
+        window.db.ref(`rooms/${gameState.roomCode}/settings`).on('value', (snapshot) => {
+          const settings = snapshot.val();
+          if (settings && settings.requiredQuestionCount && gameState.requiredQuestionCount !== settings.requiredQuestionCount) {
+            gameState.requiredQuestionCount = settings.requiredQuestionCount;
+            
+            // Start question creation if setup is complete
+            if (document.getElementById('waiting-section').innerHTML.includes('Waiting for room creator')) {
+              this.enterQuestionMode();
+            }
+          }
+        });
+      },
+
+      async startGameSetup() {
+        gameState.requiredQuestionCount = parseInt(document.getElementById('questionCount').value);
+        
+        try {
+          if (!window.db) {
+            throw new Error('Database not available');
+          }
+
+          // Update room settings
+          await window.db.ref(`rooms/${gameState.roomCode}/settings`).update({
+            requiredQuestionCount: gameState.requiredQuestionCount
+          });
+          
+          this.enterQuestionMode();
+        } catch (error) {
+          console.error('Error starting game setup:', error);
+          utils.showError('question-error', 'Failed to save game settings. Please try again.');
+        }
+      },
+
+      enterQuestionMode() {
+        this.showSection('question-section');
+        
+        // Update game state
+        dbManager.updateGameState(GAME_STATES.CREATING_QUESTIONS);
+        
+        // Update UI to show required question count
+        document.querySelector('#question-section h3').textContent = 
+          `Add Your Questions (${gameState.requiredQuestionCount} required)`;
+        
+        this.addQuestion();
+        utils.announceToScreenReader('Now in question creation mode');
+      },
+
+      showSection(sectionId) {
+        // Hide all sections
+        document.querySelectorAll('.section').forEach(section => {
+          section.classList.add('hidden');
+        });
+        
+        // Show target section
+        const targetSection = document.getElementById(sectionId);
+        if (targetSection) {
+          targetSection.classList.remove('hidden');
+        }
+      },
+
+      generateAutomatedQuestions() {
+        const intensity = document.querySelector('input[name="intensity"]:checked').value;
+        const questions = AUTOMATED_QUESTIONS[intensity];
+        const suggestedContainer = document.getElementById('suggested-questions');
+        
+        // Get 3 random questions
+        const randomQuestions = questions.sort(() => 0.5 - Math.random()).slice(0, 3);
+        
+        suggestedContainer.innerHTML = '<h5>Suggested Questions:</h5>' + 
+          randomQuestions.map((q, i) => 
+            `<div style="margin: 12px 0; padding: 12px; border-left: 3px solid var(--color-accent); background: color-mix(in srgb, var(--color-accent) 5%, transparent); border-radius: 4px;">
+              <strong>${q.q}</strong><br>
+              <small style="opacity: 0.8;">Options: ${q.opts.join(', ')}</small><br>
+              <button onclick="gameManager.useAutomatedQuestion(${JSON.stringify(q).replace(/"/g, '&quot;')})" 
+                      style="margin-top: 8px; font-size: 0.9rem; padding: 6px 12px;">
+                Use This Question
+              </button>
+            </div>`
+          ).join('');
+      },
+
+      useAutomatedQuestion(questionData) {
+        const qData = {
+          question: questionData.q,
+          options: questionData.opts,
+          correct: "" // User will need to select the correct answer
+        };
+        this.addQuestion(qData);
+      },
+
+      addQuestion(qData = null) {
+        const container = document.getElementById('questions-container');
+        const currentCount = container.children.length;
+        
+        if (currentCount >= gameState.requiredQuestionCount * APP_CONFIG.MAX_QUESTIONS_MULTIPLIER) {
+          utils.showError('question-error', `Maximum ${gameState.requiredQuestionCount * APP_CONFIG.MAX_QUESTIONS_MULTIPLIER} questions allowed`);
+          return;
+        }
+        
+        const questionIndex = currentCount + 1;
+        const div = document.createElement('div');
+        div.className = 'question-block';
+        div.setAttribute('role', 'group');
+        div.setAttribute('aria-labelledby', `question-${questionIndex}-label`);
+        
+        div.innerHTML = `
+          <h4 id="question-${questionIndex}-label" class="sr-only">Question ${questionIndex}</h4>
+          <label for="question-${questionIndex}-text" class="sr-only">Question text</label>
+          <input id="question-${questionIndex}-text" 
+                 class="main-question-input" 
+                 placeholder="e.g. What is my favorite color?" 
+                 aria-label="Question ${questionIndex} text"
+                 value="${qData ? qData.question : ''}"
+                 maxlength="200">
+          
+          <label for="option-${questionIndex}-1" class="sr-only">Option 1</label>
+          <input id="option-${questionIndex}-1"
+                 placeholder="Option 1 (e.g. Blue)" 
+                 class="option-input" 
+                 aria-label="Option 1 for question ${questionIndex}"
+                 value="${qData ? qData.options[0] : ''}"
+                 maxlength="100">
+          
+          <label for="option-${questionIndex}-2" class="sr-only">Option 2</label>
+          <input id="option-${questionIndex}-2"
+                 placeholder="Option 2 (e.g. Red)" 
+                 class="option-input" 
+                 aria-label="Option 2 for question ${questionIndex}"
+                 value="${qData ? qData.options[1] : ''}"
+                 maxlength="100">
+          
+          <label for="option-${questionIndex}-3" class="sr-only">Option 3</label>
+          <input id="option-${questionIndex}-3"
+                 placeholder="Option 3 (e.g. Green)" 
+                 class="option-input" 
+                 aria-label="Option 3 for question ${questionIndex}"
+                 value="${qData ? qData.options[2] : ''}"
+                 maxlength="100">
+          
+          <label for="option-${questionIndex}-4" class="sr-only">Option 4</label>
+          <input id="option-${questionIndex}-4"
+                 placeholder="Option 4 (e.g. Yellow)" 
+                 class="option-input" 
+                 aria-label="Option 4 for question ${questionIndex}"
+                 value="${qData ? qData.options[3] : ''}"
+                 maxlength="100">
+          
+          <label for="correct-${questionIndex}" class="sr-only">Correct answer for question ${questionIndex}</label>
+          <select id="correct-${questionIndex}" aria-label="Correct answer for question ${questionIndex}">
+            <option value="">Select Correct Answer</option>
+            <option value="1" ${qData && qData.correct == "1" ? "selected" : ""}>Option 1</option>
+            <option value="2" ${qData && qData.correct == "2" ? "selected" : ""}>Option 2</option>
+            <option value="3" ${qData && qData.correct == "3" ? "selected" : ""}>Option 3</option>
+            <option value="4" ${qData && qData.correct == "4" ? "selected" : ""}>Option 4</option>
+          </select>
+          
+          <div style="margin-top: 12px;">
+            <button class="edit-btn hidden" aria-label="Edit question ${questionIndex}">Edit</button>
+            <button class="delete-btn" aria-label="Delete question ${questionIndex}">Delete</button>
+          </div>
+        `;
+        
+        container.appendChild(div);
+
+        // Event listeners
+        div.querySelector('.delete-btn').onclick = () => {
+          div.remove();
+          utils.announceToScreenReader(`Question ${questionIndex} deleted`);
+        };
+        
+        div.querySelector('.edit-btn').onclick = () => {
+          Array.from(div.querySelectorAll('input, select')).forEach(el => el.disabled = false);
+          div.querySelector('.edit-btn').classList.add('hidden');
+          utils.announceToScreenReader(`Question ${questionIndex} unlocked for editing`);
+        };
+        
+        if (!qData) {
+          div.querySelector('.main-question-input').focus();
+        }
+      },
+
+      async submitQuestions() {
+        const blocks = document.querySelectorAll('.question-block');
+        
+        if (blocks.length < gameState.requiredQuestionCount) {
+          utils.showError('question-error', `Please add at least ${gameState.requiredQuestionCount} questions before submitting`);
+          return;
+        }
+
+        let questions = [];
+        let hasErrors = false;
+        
+        blocks.forEach((block, index) => {
+          const questionInput = block.querySelector('.main-question-input');
+          const optionInputs = block.querySelectorAll('.option-input');
+          const correctSelect = block.querySelector('select');
+          
+          const q = questionInput.value.trim();
+          const opts = Array.from(optionInputs).map(o => o.value.trim());
+          const correct = correctSelect.value;
+          
+          if (!q) {
+            utils.showError('question-error', `Question ${index + 1}: Please enter a question`);
+            questionInput.focus();
+            hasErrors = true;
+            return;
+          }
+          
+          if (!opts.every(o => o)) {
+            utils.showError('question-error', `Question ${index + 1}: Please fill out all 4 options`);
+            const emptyOption = optionInputs[opts.findIndex(o => !o)];
+            if (emptyOption) emptyOption.focus();
+            hasErrors = true;
+            return;
+          }
+          
+          if (!correct) {
+            utils.showError('question-error', `Question ${index + 1}: Please select the correct answer`);
+            correctSelect.focus();
+            hasErrors = true;
+            return;
+          }
+          
+          questions.push({ question: q, options: opts, correct });
+        });
+        
+        // Only take the required number of questions
+        questions = questions.slice(0, gameState.requiredQuestionCount);
+        
+        if (hasErrors || questions.length < gameState.requiredQuestionCount) return;
+
+        const submitBtn = document.getElementById('submit-btn');
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Submitting...';
+        
+        try {
+          if (!window.db) {
+            throw new Error('Database not available');
+          }
+
+          // Save questions and update state
+          await Promise.all([
+            window.db.ref(`rooms/${gameState.roomCode}/questions/${gameState.playerName}`).set(questions),
+            dbManager.updateGameState(GAME_STATES.QUESTIONS_SUBMITTED)
+          ]);
+          
+          utils.showSuccess('question-error', 'Questions submitted! You now have 1 minute to review and make changes.');
+          gameState.reviewEndTime = Date.now() + APP_CONFIG.REVIEW_TIME_MS;
+          gameState.reviewCompleted = false;
+          this.startReviewTimer();
+          utils.announceToScreenReader('Questions submitted successfully. Review period started.');
+          
+        } catch (error) {
+          console.error('Error submitting questions:', error);
+          utils.showError('question-error', 'Failed to save your questions. Please try again.');
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Submit Questions';
+        }
+      },
+
+      startReviewTimer() {
+        const reviewTimerDiv = document.getElementById('review-timer-visible');
+        const timerEl = document.getElementById('timer-visible');
+        
+        reviewTimerDiv.style.display = 'inline';
+        reviewTimerDiv.classList.remove('hidden');
+        
+        // Enable editing during review
+        document.querySelectorAll('.question-block input, .question-block select').forEach(el => {
+          el.disabled = false;
+        });
+        
+        gameState.isReviewPaused = false;
+
+        const updateTimer = () => {
+          if (gameState.isReviewPaused) return;
+          
+          const diff = gameState.reviewEndTime - Date.now();
+          
+          if (diff <= 0) {
+            // Timer ended naturally - mark review as completed
+            clearInterval(gameState.reviewInterval);
+            gameState.reviewCompleted = true;
+            
+            reviewTimerDiv.innerHTML = "⏰ Reflection time ended!";
+            document.querySelectorAll('.question-block input, .question-block select').forEach(el => {
+              el.disabled = true;
+            });
+            document.querySelectorAll('.edit-btn').forEach(btn => {
+              btn.classList.remove('hidden');
+            });
+            
+            // Update state to review completed
+            dbManager.updateGameState(GAME_STATES.REVIEW_COMPLETED).then(() => {
+              utils.showNotification("🕒 Your review time ended! Waiting for other player...");
+              utils.announceToScreenReader('Review time ended. Waiting for other player.', true);
+            });
+          } else {
+            timerEl.textContent = utils.formatTime(diff);
+            
+            if (diff < 30000) {
+              timerEl.classList.add('low-time');
+              if (diff <= 10000 && Math.floor((diff % 60000) / 1000) % 5 === 0) {
+                utils.announceToScreenReader(`${Math.floor(diff / 1000)} seconds remaining`, true);
+              }
+            }
+          }
+        };
+
+        gameState.reviewInterval = setInterval(updateTimer, 1000);
+        updateTimer(); // Initial call
+      },
+
+      pauseAndEdit() {
+        gameState.isReviewPaused = true;
+        clearInterval(gameState.reviewInterval);
+        
+        document.getElementById('review-timer-visible').innerHTML = 
+          '⏸️ Timer Paused - Make your changes and resubmit when ready';
+        
+        const submitBtn = document.getElementById('submit-btn');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Resubmit Questions';
+        
+        utils.showNotification("Timer paused! Make your changes and resubmit.");
+        utils.announceToScreenReader('Timer paused. You can now make changes.');
+      },
+
+      transitionToAnswering() {
+        // Only transition if we're not already in answering state
+        const currentSection = document.querySelector('.section:not(.hidden)');
+        if (currentSection?.id === 'answer-section') {
+          return; // Already in answering phase
+        }
+        
+        utils.showNotification("🎯 Both players ready! Loading questions...");
+        
+        // Clear timer if this player's review is complete
+        if (gameState.reviewCompleted && gameState.reviewInterval) {
+          clearInterval(gameState.reviewInterval);
+        }
+        
+        setTimeout(() => {
+          this.startAnswering();
+        }, 1500);
+      },
+
+      async startAnswering() {
+        // Update game state
+        await dbManager.updateGameState(GAME_STATES.ANSWERING);
+        
+        // Show answer section
+        this.showSection('answer-section');
+        document.getElementById('waiting-answers').classList.remove('hidden');
+        
+        utils.announceToScreenReader('Loading questions to answer...');
+        
+        try {
+          if (!window.db) {
+            throw new Error('Database not available');
+          }
+
+          // Load all questions
+          const snapshot = await window.db.ref(`rooms/${gameState.roomCode}/questions`).once('value');
+          const allQuestions = snapshot.val();
+          
+          if (!allQuestions) {
+            utils.showError('answer-error', 'No questions found. Please refresh and try again.');
+            return;
+          }
+          
+          // Find the other player's questions
+          const otherPlayer = Object.keys(allQuestions).find(name => name !== gameState.playerName);
+          
+          if (!otherPlayer || !allQuestions[otherPlayer]) {
+            // Questions not ready yet, wait for them
+            this.showSection('waiting-section');
+            this.startWaitingTimer();
+            this.waitForOtherPlayerQuestions();
+            return;
+          }
+          
+          // Questions are ready, show them
+          document.getElementById('waiting-section').classList.add('hidden');
+          document.getElementById('waiting-answers').classList.add('hidden');
+          this.showQuestionsToAnswer(allQuestions[otherPlayer], otherPlayer);
+          utils.announceToScreenReader(`Questions loaded from ${otherPlayer}. Ready to answer!`);
+          
+        } catch (error) {
+          console.error('Error loading questions:', error);
+          utils.showError('answer-error', 'Error loading questions. Please refresh and try again.');
+        }
+      },
+
+      startWaitingTimer() {
+        gameState.waitStartTime = Date.now();
+        const timerEl = document.getElementById('wait-timer');
+        
+        const updateTimer = () => {
+          const diff = Date.now() - gameState.waitStartTime;
+          const minutes = Math.floor(diff / 60000);
+          const seconds = Math.floor((diff % 60000) / 1000);
+          timerEl.textContent = `(${minutes}:${seconds < 10 ? '0' + seconds : seconds})`;
+          
+          if (!document.getElementById('waiting-section').classList.contains('hidden')) {
+            setTimeout(updateTimer, 1000);
+          } else {
+            timerEl.textContent = '';
+          }
+        };
+        
+        updateTimer();
+      },
+
+      waitForOtherPlayerQuestions() {
+        if (!window.db) return;
+        
+        const questionsRef = window.db.ref(`rooms/${gameState.roomCode}/questions`);
+        const questionListener = questionsRef.on('value', (snapshot) => {
+          const allQuestions = snapshot.val();
+          if (!allQuestions) return;
+          
+          const otherPlayer = Object.keys(allQuestions).find(name => name !== gameState.playerName);
+          if (otherPlayer && allQuestions[otherPlayer]) {
+            // Questions are now available
+            questionsRef.off('value', questionListener);
+            document.getElementById('waiting-section').classList.add('hidden');
+            document.getElementById('waiting-answers').classList.add('hidden');
+            this.showQuestionsToAnswer(allQuestions[otherPlayer], otherPlayer);
+            utils.announceToScreenReader(`Questions loaded from ${otherPlayer}. Ready to answer!`);
+          }
+        });
+      },
+
+      showQuestionsToAnswer(questions, otherPlayer) {
+        const container = document.getElementById('answer-container');
+        container.innerHTML = '';
+        container.setAttribute('data-other-player', otherPlayer);
+        
+        questions.forEach((question, index) => {
+          const div = document.createElement('div');
+          div.className = 'question-block';
+          div.setAttribute('role', 'group');
+          div.setAttribute('aria-labelledby', `answer-question-${index + 1}`);
+          
+          div.innerHTML = `
+            <h4 id="answer-question-${index + 1}"><strong>${index + 1}. ${question.question}</strong></h4>
+            <fieldset style="border: none; padding: 0; margin: 0;">
+              <legend class="sr-only">Choose your answer for question ${index + 1}</legend>
+              ${question.options.map((option, optionIndex) =>
+                `<label style="display: block; margin: 10px 0; cursor: pointer; padding: 8px; border-radius: 4px; transition: background-color 0.2s;">
+                  <input type="radio" 
+                         name="q${index}" 
+                         value="${optionIndex + 1}" 
+                         style="margin-right: 10px;"
+                         aria-describedby="option-${index}-${optionIndex}"> 
+                  <span id="option-${index}-${optionIndex}">${option}</span>
+                </label>`
+              ).join('')}
+            </fieldset>
+          `;
+          
+          container.appendChild(div);
+          
+          // Add hover effects to labels
+          div.querySelectorAll('label').forEach(label => {
+            label.addEventListener('mouseenter', () => {
+              label.style.backgroundColor = 'color-mix(in srgb, var(--color-accent) 10%, transparent)';
+            });
+            label.addEventListener('mouseleave', () => {
+              label.style.backgroundColor = 'transparent';
+            });
+          });
+        });
+      },
+
+      async submitAnswers() {
+        const blocks = document.querySelectorAll('#answer-container .question-block');
+        let answers = [];
+        let hasError = false;
+        let firstEmptyQuestion = null;
+        
+        blocks.forEach((block, index) => {
+          const selected = block.querySelector('input[type=radio]:checked');
+          if (!selected) {
+            hasError = true;
+            if (!firstEmptyQuestion) firstEmptyQuestion = index + 1;
+          }
+          answers.push(selected ? selected.value : null);
+        });
+        
+        if (hasError) {
+          utils.showError('answer-error', `Please answer all questions. Missing answer for question ${firstEmptyQuestion}.`);
+          const firstEmpty = document.querySelector(`input[name="q${firstEmptyQuestion-1}"]`);
+          if (firstEmpty) {
+            firstEmpty.focus();
+            firstEmpty.closest('.question-block').scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+          return;
+        }
+        
+        document.getElementById('waiting-answers').classList.remove('hidden');
+        utils.announceToScreenReader('Submitting answers...');
+        
+        try {
+          if (!window.db) {
+            throw new Error('Database not available');
+          }
+
+          // Submit answers and update game state
+          await Promise.all([
+            window.db.ref(`rooms/${gameState.roomCode}/answers/${gameState.playerName}`).set(answers),
+            dbManager.updateGameState(GAME_STATES.COMPLETED)
+          ]);
+          
+          this.waitForBothAnswers(answers);
+          
+        } catch (error) {
+          console.error('Error submitting answers:', error);
+          utils.showError('answer-error', 'Failed to save your answers. Please try again.');
+          document.getElementById('waiting-answers').classList.add('hidden');
+        }
+      },
+
+      async waitForBothAnswers(myAnswers) {
+        const otherPlayer = document.getElementById('answer-container').getAttribute('data-other-player');
+        
+        try {
+          if (!window.db) {
+            throw new Error('Database not available');
+          }
+
+          // Check if other player's answers are already available
+          const snapshot = await window.db.ref(`rooms/${gameState.roomCode}/answers`).once('value');
+          const allAnswers = snapshot.val();
+          
+          if (allAnswers && allAnswers[gameState.playerName] && allAnswers[otherPlayer]) {
+            // Both answers are ready
+            this.loadQuestionsAndCalculateResults(myAnswers, otherPlayer, allAnswers[otherPlayer]);
+          } else {
+            // Wait for other player's answers
+            const answersRef = window.db.ref(`rooms/${gameState.roomCode}/answers`);
+            const answerListener = answersRef.on('value', (snapshot) => {
+              const allAnswers = snapshot.val();
+              if (allAnswers && allAnswers[gameState.playerName] && allAnswers[otherPlayer]) {
+                answersRef.off('value', answerListener);
+                this.loadQuestionsAndCalculateResults(myAnswers, otherPlayer, allAnswers[otherPlayer]);
+              }
+            });
+          }
+        } catch (error) {
+          console.error('Error waiting for answers:', error);
+          utils.showError('answer-error', 'Error waiting for other player. Please refresh.');
+        }
+      },
+
+      async loadQuestionsAndCalculateResults(myAnswers, otherPlayer, otherPlayerAnswers) {
+        try {
+          if (!window.db) {
+            throw new Error('Database not available');
+          }
+
+          const snapshot = await window.db.ref(`rooms/${gameState.roomCode}/questions`).once('value');
+          const allQuestions = snapshot.val();
+          
+          if (allQuestions) {
+            this.calculateResults(
+              myAnswers,
+              allQuestions[otherPlayer],
+              otherPlayer,
+              allQuestions,
+              otherPlayerAnswers
+            );
+            document.getElementById('waiting-answers').classList.add('hidden');
+          }
+        } catch (error) {
+          console.error('Error loading questions for results:', error);
+          utils.showError('answer-error', 'Error loading questions for results. Please refresh.');
+        }
+      },
+
+      calculateResults(answers, questions, otherPlayer, allQuestions, otherPlayerAnswers = null) {
+        let correctCount = 0;
+        let breakdown = '';
+        
+        questions.forEach((q, i) => {
+          const isCorrect = answers[i] == q.correct;
+          if (isCorrect) correctCount++;
+          
+          const userAnswer = answers[i] ? q.options[answers[i] - 1] : 'No answer';
+          const correctAnswer = q.options[q.correct - 1];
+          
+          breakdown += `
+            <div style="margin: 16px 0; padding: 16px; border-radius: var(--border-radius); background: ${isCorrect ? 'var(--bg-success)' : 'var(--bg-error)'}; border: 1px solid ${isCorrect ? 'var(--border-success)' : 'var(--border-error)'};">
+              <p><strong>${i + 1}. ${q.question}</strong></p>
+              <p>Your answer: <span style="color: ${isCorrect ? 'var(--text-success)' : 'var(--text-error)'}; font-weight: 600;">${userAnswer}</span> ${isCorrect ? '✅' : '❌'}</p>
+              <p>Correct answer: <span style="color: var(--text-success); font-weight: 600;">${correctAnswer}</span></p>
+            </div>
+          `;
+        });
+        
+        const percent = Math.round((correctCount / questions.length) * 100);
+        const tag = this.getLevelTag(percent);
+
+        let otherBreakdownHTML = '';
+        let otherScoreHTML = '';
+        let otherCorrectCount = 0;
+        
+        if (allQuestions && allQuestions[gameState.playerName] && otherPlayerAnswers && Array.isArray(otherPlayerAnswers)) {
+          const questionsForOther = allQuestions[gameState.playerName];
+          let otherBreakdown = '';
+          
+          questionsForOther.forEach((q, i) => {
+            const isCorrect = otherPlayerAnswers[i] == q.correct;
+            if (isCorrect) otherCorrectCount++;
+            
+            const theirAnswer = otherPlayerAnswers[i] ? q.options[otherPlayerAnswers[i] - 1] : 'No answer';
+            const correctAnswer = q.options[q.correct - 1];
+            
+            otherBreakdown += `
+              <div style="margin: 16px 0; padding: 16px; border-radius: var(--border-radius); background: ${isCorrect ? 'var(--bg-success)' : 'var(--bg-error)'}; border: 1px solid ${isCorrect ? 'var(--border-success)' : 'var(--border-error)'};">
+                <p><strong>${i + 1}. ${q.question}</strong></p>
+                <p>Their answer: <span style="color: ${isCorrect ? 'var(--text-success)' : 'var(--text-error)'}; font-weight: 600;">${theirAnswer}</span> ${isCorrect ? '✅' : '❌'}</p>
+                <p>Correct answer: <span style="color: var(--text-success); font-weight: 600;">${correctAnswer}</span></p>
+              </div>
+            `;
+          });
+          
+          const otherPercent = Math.round((otherCorrectCount / questionsForOther.length) * 100);
+          const otherTag = this.getLevelTag(otherPercent);
+          
+          otherScoreHTML = `<h4 style="margin-top: 32px;">${otherPlayer} scored ${otherPercent}% - ${otherTag}</h4>`;
+          otherBreakdownHTML = `<h4>How ${otherPlayer} did on your questions:</h4>` + otherBreakdown;
+        }
+
+        // Trigger confetti for high scores
+        if (percent >= 90 || (otherPlayerAnswers && Math.round((otherCorrectCount / allQuestions[gameState.playerName].length) * 100) >= 90)) {
+          this.createConfetti();
+        }
+
+        this.showSection('result-section');
+        document.getElementById('result-output').innerHTML = `
+          <div style="text-align: left; max-width: 600px; margin: 0 auto;">
+            <h4>${gameState.playerName || 'You'} scored ${percent}% - ${tag}</h4>
+            <h4>Your performance on ${otherPlayer}'s questions:</h4>
+            ${breakdown}
+            ${otherScoreHTML ? `<hr style="margin: 40px 0; border: 1px solid var(--border-input);">${otherScoreHTML}${otherBreakdownHTML}` : ""}
+          </div>
+        `;
+
+        utils.announceToScreenReader(`Results ready. You scored ${percent} percent - ${tag}`);
+        
+        // Clean up listeners and schedule room cleanup
+        this.cleanup();
+      },
+
+      getLevelTag(percent) {
+        if (percent === 100) return "💎 Perfect Harmony";
+        if (percent >= 90) return "💖 Soulmate Energy";
+        if (percent >= 80) return "😊 Close Confidant";
+        if (percent >= 70) return "🤝 Good Friends";
+        if (percent >= 60) return "🙂 Getting There";
+        if (percent >= 50) return "😐 Friendly Guesswork";
+        if (percent >= 40) return "😅 We Need to Talk";
+        if (percent >= 30) return "😬 Strangers Much?";
+        if (percent >= 20) return "🤔 Do You Even Know Me?";
+        if (percent >= 10) return "😱 Who Are You?";
+        return "👻 Ghost Friends";
+      },
+
+      createConfetti() {
+        for (let i = 0; i < 50; i++) {
+          setTimeout(() => {
+            const confetti = document.createElement('div');
+            confetti.classList.add('confetti');
+            confetti.style.left = Math.random() * 100 + 'vw';
+            confetti.style.animationDuration = Math.random() * 2 + 2 + 's';
+            confetti.style.opacity = Math.random();
+            document.body.appendChild(confetti);
+            
+            setTimeout(() => {
+              if (confetti.parentNode) {
+                confetti.remove();
+              }
+            }, 4000);
+          }, i * 50);
+        }
+      },
+
+      cleanup() {
+        // Clean up listeners
+        if (gameState.gameStateListener) {
+          gameState.gameStateListener.off();
+          gameState.gameStateListener = null;
+        }
+        
+        // Clear timers
+        if (gameState.reviewInterval) {
+          clearInterval(gameState.reviewInterval);
+        }
+        
+        // Schedule room cleanup
+        if (window.db && gameState.roomCode) {
+          setTimeout(() => {
+            window.db.ref(`rooms/${gameState.roomCode}`).remove()
+              .catch(err => console.error("Failed to clean up game room:", err));
+          }, APP_CONFIG.CLEANUP_DELAY_MS);
+        }
+      }
+    };
+
+    // Modal Functions (Global scope for onclick handlers)
+    function showAboutName() {
+      modalManager.show('about-name-modal');
+    }
+
+    function closeAboutName() {
+      modalManager.hide('about-name-modal');
+    }
+
+    function showInstructions() {
+      modalManager.show('instructions-modal');
+    }
+
+    function closeInstructions() {
+      modalManager.hide('instructions-modal');
+    }
+
+    // Game Functions (Global scope for onclick handlers)
+    function createRoom() {
+      gameManager.createRoom();
+    }
+
+    function joinRoom() {
+      gameManager.joinRoom();
+    }
+
+    function startGameSetup() {
+      gameManager.startGameSetup();
+    }
+
+    function generateAutomatedQuestions() {
+      gameManager.generateAutomatedQuestions();
+    }
+
+    function addQuestion(qData) {
+      gameManager.addQuestion(qData);
+    }
+
+    function submitQuestions() {
+      gameManager.submitQuestions();
+    }
+
+    function pauseAndEdit() {
+      gameManager.pauseAndEdit();
+    }
+
+    function submitAnswers() {
+      gameManager.submitAnswers();
+    }
+
+    // Event Listeners
+    document.addEventListener('DOMContentLoaded', function() {
+      // Initialize theme
+      themeManager.init();
+      
+      // Theme switch button
+      const themeSwitchBtn = document.getElementById('theme-switch');
+      if (themeSwitchBtn) {
+        themeSwitchBtn.addEventListener('click', () => themeManager.toggle());
+      }
+      
+      // About button
+      const aboutBtn = document.getElementById('about-name');
+      if (aboutBtn) {
+        aboutBtn.addEventListener('click', showAboutName);
+      }
+      
+      // Keyboard accessibility
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+          closeInstructions();
+          closeAboutName();
+        }
+      });
+      
+      // Modal click outside to close
+      window.addEventListener('click', function(event) {
+        const instructionsModal = document.getElementById('instructions-modal');
+        const aboutModal = document.getElementById('about-name-modal');
+        
+        if (event.target === instructionsModal) {
+          closeInstructions();
+        }
+        if (event.target === aboutModal) {
+          closeAboutName();
+        }
+      });
+      
+      // Input auto-formatting
+      const roomCodeInput = document.getElementById('roomCode');
+      if (roomCodeInput) {
+        roomCodeInput.addEventListener('input', function() {
+          this.value = this.value.toUpperCase();
+        });
+      }
+      
+      // Performance logging
+      const perfEnd = performance.now();
+      console.log(`DALORF initialization completed in ${(perfEnd - perfStart).toFixed(2)}ms`);
+    });
+
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', function() {
+      gameManager.cleanup();
+    });
+
+    // Error handling
+    window.addEventListener('error', function(event) {
+      console.error('JavaScript error:', event.error);
+      utils.showNotification('An error occurred. Please refresh the page if issues persist.', 6000);
+    });
+
+    window.addEventListener('unhandledrejection', function(event) {
+      console.error('Unhandled promise rejection:', event.reason);
+      event.preventDefault();
+    });
+
+    // Expose necessary functions to global scope
+    window.gameManager = gameManager;
+    window.showAboutName = showAboutName;
+    window.closeAboutName = closeAboutName;
+    window.showInstructions = showInstructions;
+    window.closeInstructions = closeInstructions;
+    window.createRoom = createRoom;
+    window.joinRoom = joinRoom;
+    window.startGameSetup = startGameSetup;
+    window.generateAutomatedQuestions = generateAutomatedQuestions;
+    window.addQuestion = addQuestion;
+    window.submitQuestions = submitQuestions;
+    window.pauseAndEdit = pauseAndEdit;
+    window.submitAnswers = submitAnswers;
+  </script>
+</body>
+</html>
