@@ -403,6 +403,16 @@
       color: var(--text-primary);
     }
 
+    /* Share Card Canvas */
+    #share-canvas {
+      display: none;
+      max-width: 100%;
+      height: auto;
+      border-radius: var(--border-radius);
+      box-shadow: var(--shadow-heavy);
+      margin: 16px auto;
+    }
+
     /* Animations */
     @keyframes fadeIn {
       from { opacity: 0; }
@@ -449,6 +459,176 @@
     .confetti:nth-child(3n) { background: #2196f3; }
     .confetti:nth-child(4n) { background: #ff9800; }
     .confetti:nth-child(5n) { background: #9c27b0; }
+    
+    /* Progress Bar */
+.progress-container {
+  width: 100%;
+  max-width: 500px;
+  margin: 20px auto;
+  background: var(--bg-input);
+  border-radius: 20px;
+  overflow: hidden;
+  height: 12px;
+  position: relative;
+}
+
+.progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-accent), var(--color-accent-hover));
+  border-radius: 20px;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.progress-bar::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* Live Indicator */
+.live-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: var(--bg-notification);
+  border: 2px solid var(--border-notification);
+  border-radius: 20px;
+  margin: 10px 0;
+  animation: fadeIn 0.5s ease;
+}
+
+.live-dot {
+  width: 8px;
+  height: 8px;
+  background: #4caf50;
+  border-radius: 50%;
+  animation: pulse-dot 1.5s infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.2); }
+}
+
+/* Sound Toggle */
+.sound-toggle {
+  position: fixed;
+  top: 70px;
+  right: 20px;
+  background: var(--color-accent-light);
+  color: var(--color-accent);
+  font-size: 1.3rem;
+  border-radius: 50%;
+  border: none;
+  padding: 10px;
+  cursor: pointer;
+  transition: all var(--timing-fast);
+  z-index: 1000;
+  min-height: 40px;
+  min-width: 40px;
+}
+
+.sound-toggle:hover {
+  background: var(--color-accent);
+  color: #ffffff;
+  transform: scale(1.1);
+}
+
+/* Achievement Badge */
+.achievement-badge {
+  display: inline-block;
+  padding: 12px 20px;
+  margin: 10px;
+  background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-hover) 100%);
+  color: white;
+  border-radius: 30px;
+  font-weight: 600;
+  font-size: 1.1rem;
+  box-shadow: var(--shadow-medium);
+  animation: badgeAppear 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes badgeAppear {
+  0% { transform: scale(0) rotate(-180deg); opacity: 0; }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+/* Question Card Animation */
+.question-block {
+  animation: slideInQuestion 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transform-origin: center;
+}
+
+@keyframes slideInQuestion {
+  0% { 
+    opacity: 0; 
+    transform: translateY(30px) scale(0.9);
+  }
+  100% { 
+    opacity: 1; 
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Timer Challenge Mode */
+.challenge-timer {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--color-accent);
+  margin: 20px 0;
+  animation: timerPulse 1s infinite;
+}
+
+.challenge-timer.critical {
+  color: #ff5722;
+  animation: timerCritical 0.5s infinite;
+}
+
+@keyframes timerPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+@keyframes timerCritical {
+  0%, 100% { transform: scale(1); color: #ff5722; }
+  50% { transform: scale(1.15); color: #ff1744; }
+}
+
+/* Swipe Hint for Mobile */
+.swipe-hint {
+  display: none;
+  padding: 8px 16px;
+  background: var(--bg-notification);
+  border-radius: 20px;
+  margin: 10px auto;
+  max-width: fit-content;
+  animation: swipeHint 2s infinite;
+}
+
+@media (max-width: 768px) {
+  .swipe-hint {
+    display: block;
+  }
+}
+
+@keyframes swipeHint {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-10px); }
+  75% { transform: translateX(10px); }
+}
 
     /* Responsive Design */
     @media (max-width: 768px) {
@@ -623,10 +803,6 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
   
   <script>
-    // IMPORTANT SECURITY NOTE: 
-    // Firebase config is exposed here for demo purposes.
-    // In production, implement proper Firebase security rules
-    // and consider using environment variables or server-side configuration.
     const firebaseConfig = {
       apiKey: "AIzaSyAvaDuz1OCKYuDfieZiHynhYkur9KOPY00",
       authDomain: "birdview-025802.firebaseapp.com",
@@ -638,37 +814,29 @@
       measurementId: "G-Z08YPG773L"
     };
     
-    // Initialize Firebase
     try {
       firebase.initializeApp(firebaseConfig);
       window.db = firebase.database();
     } catch (error) {
       console.error('Firebase initialization failed:', error);
-      // Fallback for offline mode or Firebase connection issues
       window.db = null;
     }
   </script>
 </head>
 
 <body class="dark-theme">
-  <!-- ARIA live regions for screen reader announcements -->
   <div id="announcements" class="sr-only" aria-live="polite" aria-atomic="true"></div>
   <div id="timer-announcements" class="sr-only" aria-live="assertive" aria-atomic="true"></div>
   
-  <!-- Skip link for keyboard navigation -->
   <a href="#main-content" class="sr-only" style="position: absolute; left: -10000px; top: auto; width: 1px; height: 1px; overflow: hidden;">Skip to main content</a>
   
-  <!-- Notifications container -->
   <div id="notifications-container" aria-live="polite"></div>
 
-  <!-- Theme switch button -->
   <button class="theme-switch" id="theme-switch" aria-label="Switch between light and dark theme" title="Toggle theme">
     🌞
   </button>
   
-  <!-- Main content -->
   <main id="main-content" role="main" class="container">
-    <!-- Header -->
     <header style="text-align: center; margin-bottom: 30px;">
       <div style="display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 8px; flex-wrap: wrap;">
         <h1>🪨 DALORF 🐟</h1>
@@ -683,12 +851,10 @@
       <p id="about-description" class="sr-only">Click to learn about the story behind the name DALORF</p>
     </header>
 
-    <!-- Room info display -->
     <section id="room-info-display" class="room-info hidden" role="status" aria-live="polite">
       <div id="room-details"></div>
     </section>
 
-    <!-- Authentication Section -->
     <section id="auth-section" class="section" aria-labelledby="auth-heading">
       <h3 id="auth-heading">Join or Create Game</h3>
       <p>Test how well you know each other! Create questions and see if your friend can answer them correctly.</p>
@@ -733,7 +899,6 @@
       </div>
     </section>
 
-    <!-- Game Setup Section -->
     <section id="question-setup-section" class="section hidden" aria-labelledby="setup-heading">
       <h3 id="setup-heading">Game Setup</h3>
       <div class="question-count-selector">
@@ -750,12 +915,10 @@
       </div>
     </section>
 
-    <!-- Question Creation Section -->
     <section id="question-section" class="section hidden" aria-labelledby="questions-heading">
       <h3 id="questions-heading">Add Your Questions</h3>
       <p>Create personal questions that only someone who knows you well could answer!</p>
       
-      <!-- Automated Questions Helper -->
       <div class="automated-questions">
         <h4>Need Question Ideas? Try These:</h4>
         <fieldset class="intensity-selector">
@@ -785,7 +948,6 @@
       <div id="state-transition" class="notification hidden" role="status"></div>
     </section>
 
-    <!-- Waiting Section -->
     <section id="waiting-section" class="section hidden" aria-labelledby="waiting-heading">
       <h3 id="waiting-heading" class="sr-only">Waiting for other player</h3>
       <div class="loading-indicator" role="status" aria-live="polite">
@@ -794,7 +956,6 @@
       </div>
     </section>
 
-    <!-- Answer Section -->
     <section id="answer-section" class="section hidden" aria-labelledby="answer-heading">
       <h3 id="answer-heading">Answer Your Friend's Questions</h3>
       <div id="answer-container" role="group" aria-label="Questions to answer"></div>
@@ -803,7 +964,6 @@
       <div id="waiting-answers" class="hidden loading-indicator" role="status">⏳ Loading questions...</div>
     </section>
 
-    <!-- Results Section -->
     <section id="result-section" class="section hidden" aria-labelledby="results-heading">
       <h3 id="results-heading">Results</h3>
       <div id="result-output" role="region" aria-label="Game results"></div>
@@ -812,7 +972,9 @@
     </section>
   </main>
 
-  <!-- About Name Modal -->
+  <!-- Hidden canvas for generating share image -->
+  <canvas id="share-canvas" width="1200" height="630"></canvas>
+
   <div id="about-name-modal" class="modal" role="dialog" aria-labelledby="about-modal-title" aria-hidden="true">
     <div class="modal-content">
       <button class="close" onclick="closeAboutName()" aria-label="Close about dialog">&times;</button>
@@ -834,7 +996,6 @@
     </div>
   </div>
 
-  <!-- Instructions Modal -->
   <div id="instructions-modal" class="modal" role="dialog" aria-labelledby="instructions-modal-title" aria-hidden="true">
     <div class="modal-content">
       <button class="close" onclick="closeInstructions()" aria-label="Close instructions dialog">&times;</button>
@@ -884,21 +1045,19 @@
   <script>
     'use strict';
 
-    // Performance monitoring
     const perfStart = performance.now();
 
-    // App Configuration
     const APP_CONFIG = {
-      REVIEW_TIME_MS: 60 * 1000, // 1 minute
+      REVIEW_TIME_MS: 60 * 1000,
       MAX_QUESTIONS_MULTIPLIER: 2,
       CLEANUP_DELAY_MS: 8000,
       NOTIFICATION_DURATION_MS: 4000,
       MAX_NAME_LENGTH: 50,
       MAX_ROOM_CODE_LENGTH: 10,
-      DEBOUNCE_DELAY_MS: 300
+      DEBOUNCE_DELAY_MS: 300,
+      SESSION_STORAGE_KEY: 'dalorf_game_session'
     };
 
-    // Game States
     const GAME_STATES = {
       SETUP: 'setup',
       CREATING_QUESTIONS: 'creating_questions', 
@@ -909,7 +1068,243 @@
       COMPLETED: 'completed'
     };
 
-    // Automated Questions Database
+    // Session Manager
+    const sessionManager = {
+      saveSession() {
+        const sessionData = {
+          playerName: gameState.playerName,
+          roomCode: gameState.roomCode,
+          requiredQuestionCount: gameState.requiredQuestionCount,
+          timestamp: Date.now()
+        };
+        
+        try {
+          sessionStorage.setItem(APP_CONFIG.SESSION_STORAGE_KEY, JSON.stringify(sessionData));
+          
+          // Also update URL without reloading
+          if (gameState.roomCode && gameState.playerName) {
+            const url = new URL(window.location);
+            url.searchParams.set('room', gameState.roomCode);
+            url.searchParams.set('player', gameState.playerName);
+            window.history.replaceState({}, '', url);
+          }
+        } catch (error) {
+          console.error('Failed to save session:', error);
+        }
+      },
+
+      loadSession() {
+        try {
+          // First try URL parameters
+          const urlParams = new URLSearchParams(window.location.search);
+          const roomFromUrl = urlParams.get('room');
+          const playerFromUrl = urlParams.get('player');
+          
+          if (roomFromUrl && playerFromUrl) {
+            return {
+              playerName: playerFromUrl,
+              roomCode: roomFromUrl.toUpperCase(),
+              fromUrl: true
+            };
+          }
+          
+          // Then try sessionStorage
+          const saved = sessionStorage.getItem(APP_CONFIG.SESSION_STORAGE_KEY);
+          if (!saved) return null;
+          
+          const sessionData = JSON.parse(saved);
+          
+          // Check if session is not too old (24 hours)
+          const age = Date.now() - sessionData.timestamp;
+          if (age > 24 * 60 * 60 * 1000) {
+            this.clearSession();
+            return null;
+          }
+          
+          return sessionData;
+        } catch (error) {
+          console.error('Failed to load session:', error);
+          return null;
+        }
+      },
+
+      clearSession() {
+        try {
+          sessionStorage.removeItem(APP_CONFIG.SESSION_STORAGE_KEY);
+          
+          // Clear URL parameters
+          const url = new URL(window.location);
+          url.searchParams.delete('room');
+          url.searchParams.delete('player');
+          window.history.replaceState({}, '', url);
+        } catch (error) {
+          console.error('Failed to clear session:', error);
+        }
+      },
+
+      async attemptReconnect() {
+        const session = this.loadSession();
+        if (!session) return false;
+        
+        // Show reconnecting UI
+        const authSection = document.getElementById('auth-section');
+        authSection.innerHTML = `
+          <div class="loading-indicator">
+            <h3>🔄 Reconnecting...</h3>
+            <p>Restoring your game session</p>
+            <p><strong>Room:</strong> ${session.roomCode} | <strong>Player:</strong> ${session.playerName}</p>
+            <button onclick="sessionManager.cancelReconnect()" style="margin-top: 20px; background: #ef5350;">
+              Cancel & Start New Game
+            </button>
+          </div>
+        `;
+        
+        utils.announceToScreenReader('Reconnecting to your game session');
+        
+        try {
+          if (!window.db) {
+            throw new Error('Database not available');
+          }
+
+          // Check if room still exists
+          const roomSnapshot = await window.db.ref(`rooms/${session.roomCode}/settings`).once('value');
+          
+          if (!roomSnapshot.exists()) {
+            utils.showNotification('Your game session has expired. Starting fresh!');
+            this.clearSession();
+            location.reload();
+            return false;
+          }
+          
+          // Restore game state
+          gameState.playerName = session.playerName;
+          gameState.roomCode = session.roomCode;
+          gameState.requiredQuestionCount = session.requiredQuestionCount || 5;
+          
+          // Set up listeners
+          dbManager.listenForGameStateChanges();
+          dbManager.updateRoomInfo();
+          
+          // Check current game state
+          const stateSnapshot = await window.db.ref(`rooms/${session.roomCode}/gameState/${session.playerName}`).once('value');
+          const myState = stateSnapshot.val();
+          
+          if (!myState) {
+            // Player hasn't started yet
+            const settings = roomSnapshot.val();
+            if (settings.requiredQuestionCount) {
+              gameState.requiredQuestionCount = settings.requiredQuestionCount;
+              gameManager.enterQuestionMode();
+            } else {
+              gameManager.showSection('question-setup-section');
+            }
+          } else {
+            // Resume based on state
+            await this.resumeFromState(myState.state);
+          }
+          
+          utils.showNotification('✅ Successfully reconnected!');
+          utils.announceToScreenReader('Successfully reconnected to game');
+          return true;
+          
+        } catch (error) {
+          console.error('Reconnection failed:', error);
+          utils.showNotification('Failed to reconnect. Please start a new game.');
+          this.clearSession();
+          location.reload();
+          return false;
+        }
+      },
+
+      async resumeFromState(state) {
+        switch(state) {
+          case GAME_STATES.SETUP:
+          case GAME_STATES.CREATING_QUESTIONS:
+            gameManager.enterQuestionMode();
+            utils.showNotification('📝 Resumed: Continue creating your questions');
+            break;
+            
+          case GAME_STATES.QUESTIONS_SUBMITTED:
+            // Load questions and show review state
+            const questionsSnapshot = await window.db.ref(`rooms/${gameState.roomCode}/questions/${gameState.playerName}`).once('value');
+            const questions = questionsSnapshot.val();
+            
+            if (questions) {
+              gameManager.showSection('question-section');
+              // Populate questions for viewing
+              document.getElementById('questions-container').innerHTML = '';
+              questions.forEach(q => {
+                gameManager.addQuestion({
+                  question: q.question,
+                  options: q.options,
+                  correct: q.correct
+                });
+              });
+              
+              // Disable all inputs
+              document.querySelectorAll('.question-block input, .question-block select').forEach(el => {
+                el.disabled = true;
+              });
+              
+              document.getElementById('review-timer-visible').innerHTML = 
+                '⏰ Review time ended. Waiting for other player...';
+              document.getElementById('review-timer-visible').style.display = 'block';
+              
+              utils.showNotification('⏳ Resumed: Waiting for other player');
+            }
+            break;
+            
+          case GAME_STATES.REVIEW_COMPLETED:
+          case GAME_STATES.BOTH_QUESTIONS_READY:
+            gameManager.showSection('waiting-section');
+            document.getElementById('waiting-section').innerHTML = 
+              '<div class="loading-indicator">⏳ Waiting for both players to be ready...</div>';
+            gameManager.startWaitingTimer();
+            utils.showNotification('⏳ Resumed: Waiting for game to start');
+            break;
+            
+          case GAME_STATES.ANSWERING:
+            await gameManager.startAnswering();
+            utils.showNotification('🎯 Resumed: Answer the questions');
+            break;
+            
+          case GAME_STATES.COMPLETED:
+            // Check if we have results to show
+            const answersSnapshot = await window.db.ref(`rooms/${gameState.roomCode}/answers`).once('value');
+            const allAnswers = answersSnapshot.val();
+            
+            if (allAnswers && allAnswers[gameState.playerName]) {
+              const questionsSnapshot = await window.db.ref(`rooms/${gameState.roomCode}/questions`).once('value');
+              const allQuestions = questionsSnapshot.val();
+              
+              if (allQuestions) {
+                const otherPlayer = Object.keys(allQuestions).find(name => name !== gameState.playerName);
+                
+                if (otherPlayer && allAnswers[otherPlayer]) {
+                  // Show results
+                  await gameManager.loadQuestionsAndCalculateResults(
+                    allAnswers[gameState.playerName],
+                    otherPlayer,
+                    allAnswers[otherPlayer]
+                  );
+                  utils.showNotification('🏆 Resumed: View your results');
+                } else {
+                  gameManager.showSection('waiting-section');
+                  document.getElementById('waiting-section').innerHTML = 
+                    '<div class="loading-indicator">⏳ Waiting for other player to finish...</div>';
+                }
+              }
+            }
+            break;
+        }
+      },
+
+      cancelReconnect() {
+        this.clearSession();
+        location.reload();
+      }
+    };
+
     const AUTOMATED_QUESTIONS = {
       light: [
         { q: "What's my favorite color?", opts: ["Blue", "Red", "Green", "Purple"] },
@@ -943,7 +1338,6 @@
       ]
     };
 
-    // Global State
     let gameState = {
       playerName: null,
       roomCode: null,
@@ -954,10 +1348,13 @@
       isReviewPaused: false,
       reviewCompleted: false,
       gameStateListener: null,
-      waitStartTime: null
+      waitStartTime: null,
+      myScore: null,
+      myTag: null,
+      otherScore: null,
+      otherTag: null
     };
 
-    // Utility Functions
     const utils = {
       debounce(func, wait) {
         let timeout;
@@ -999,7 +1396,6 @@
         errorEl.className = 'error-message';
         errorEl.classList.remove('hidden');
         
-        // Auto-hide after 5 seconds
         setTimeout(() => {
           if (errorEl.textContent === message) {
             errorEl.classList.add('hidden');
@@ -1039,7 +1435,6 @@
       }
     };
 
-    // Theme Management
     const themeManager = {
       init() {
         const savedTheme = localStorage.getItem('dalorf-theme');
@@ -1082,7 +1477,6 @@
       }
     };
 
-    // Modal Management
     const modalManager = {
       show(modalId) {
         const modal = document.getElementById(modalId);
@@ -1092,13 +1486,11 @@
         modal.setAttribute('aria-hidden', 'false');
         document.body.style.overflow = 'hidden';
         
-        // Focus management
         const firstFocusable = modal.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
         if (firstFocusable) {
           firstFocusable.focus();
         }
         
-        // Trap focus
         this.trapFocus(modal);
       },
 
@@ -1136,7 +1528,6 @@
       }
     };
 
-    // Database Operations
     const dbManager = {
       async updateGameState(newState, additionalData = {}) {
         if (!window.db) {
@@ -1179,24 +1570,29 @@
             this.updateRoomInfo();
           }
           
-          // Check for transition when both players completed review
+          // Only check for transition if both players exist
           if (players.length === 2) {
-            const allStates = Object.values(states);
-            const bothReviewCompleted = allStates.every(s => 
-              s.state === GAME_STATES.REVIEW_COMPLETED || 
-              s.state === GAME_STATES.BOTH_QUESTIONS_READY ||
-              s.state === GAME_STATES.ANSWERING ||
-              s.state === GAME_STATES.COMPLETED
+            const myState = states[gameState.playerName]?.state;
+            const otherState = states[otherPlayer]?.state;
+            
+            // Check if BOTH players have actually completed their review
+            // (not just created questions, but finished the review timer or manually completed)
+            const bothActuallyReady = (
+              (myState === GAME_STATES.REVIEW_COMPLETED || 
+               myState === GAME_STATES.BOTH_QUESTIONS_READY ||
+               myState === GAME_STATES.ANSWERING) &&
+              (otherState === GAME_STATES.REVIEW_COMPLETED || 
+               otherState === GAME_STATES.BOTH_QUESTIONS_READY ||
+               otherState === GAME_STATES.ANSWERING)
             );
             
-            if (bothReviewCompleted) {
-              const currentState = states[gameState.playerName]?.state;
-              if (currentState === GAME_STATES.REVIEW_COMPLETED) {
+            if (bothActuallyReady) {
+              // Only transition if we haven't already
+              if (myState === GAME_STATES.REVIEW_COMPLETED) {
                 this.updateGameState(GAME_STATES.BOTH_QUESTIONS_READY).then(() => {
                   gameManager.transitionToAnswering();
                 });
-              } else if (currentState === GAME_STATES.BOTH_QUESTIONS_READY) {
-                const otherState = states[otherPlayer]?.state;
+              } else if (myState === GAME_STATES.BOTH_QUESTIONS_READY) {
                 if (otherState === GAME_STATES.BOTH_QUESTIONS_READY || otherState === GAME_STATES.ANSWERING) {
                   gameManager.transitionToAnswering();
                 }
@@ -1220,7 +1616,99 @@
       }
     };
 
-    // Game Logic
+    const shareManager = {
+      generateShareImage() {
+        const canvas = document.getElementById('share-canvas');
+        const ctx = canvas.getContext('2d');
+        
+        const isDark = document.body.classList.contains('dark-theme');
+        
+        // Background gradient
+        const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+        if (isDark) {
+          gradient.addColorStop(0, '#745100');
+          gradient.addColorStop(1, '#000000');
+        } else {
+          gradient.addColorStop(0, '#ffd6e1');
+          gradient.addColorStop(1, '#c9f6f9');
+        }
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // Title
+        ctx.fillStyle = isDark ? '#ffffff' : '#232323';
+        ctx.font = 'bold 60px Montserrat, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('🪨 DALORF 🐟', canvas.width / 2, 100);
+        
+        ctx.font = '32px Montserrat, sans-serif';
+        ctx.fillText('Challenge Results', canvas.width / 2, 160);
+        
+        // Card background
+        ctx.fillStyle = isDark ? 'rgba(34, 34, 34, 0.9)' : 'rgba(255, 255, 255, 0.9)';
+        ctx.fillRect(100, 220, canvas.width - 200, 320);
+        
+        // Results
+        ctx.fillStyle = isDark ? '#ffd26b' : '#ff80a8';
+        ctx.font = 'bold 36px Montserrat, sans-serif';
+        ctx.textAlign = 'left';
+        
+        let yPos = 280;
+        
+        if (gameState.myScore !== null) {
+          ctx.fillText(`${gameState.playerName}: ${gameState.myScore}%`, 150, yPos);
+          ctx.font = '28px Montserrat, sans-serif';
+          ctx.fillStyle = isDark ? '#ffffff' : '#232323';
+          ctx.fillText(gameState.myTag, 150, yPos + 40);
+          yPos += 100;
+        }
+        
+        if (gameState.otherScore !== null) {
+          ctx.fillStyle = isDark ? '#ffd26b' : '#ff80a8';
+          ctx.font = 'bold 36px Montserrat, sans-serif';
+          ctx.fillText(`${gameState.otherPlayerName}: ${gameState.otherScore}%`, 150, yPos);
+          ctx.font = '28px Montserrat, sans-serif';
+          ctx.fillStyle = isDark ? '#ffffff' : '#232323';
+          ctx.fillText(gameState.otherTag, 150, yPos + 40);
+        }
+        
+        // Footer
+        ctx.fillStyle = isDark ? '#cccccc' : '#666666';
+        ctx.font = '24px Montserrat, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('Test how well YOU know your friends!', canvas.width / 2, 580);
+        
+        return canvas.toDataURL('image/png');
+      },
+
+      async downloadImage(dataUrl) {
+        const link = document.createElement('a');
+        link.download = `dalorf-results-${Date.now()}.png`;
+        link.href = dataUrl;
+        link.click();
+      },
+
+      async shareImage(dataUrl) {
+        try {
+          const blob = await (await fetch(dataUrl)).blob();
+          const file = new File([blob], 'dalorf-results.png', { type: 'image/png' });
+          
+          if (navigator.share && navigator.canShare({ files: [file] })) {
+            await navigator.share({
+              title: 'DALORF Challenge Results',
+              text: `Check out our DALORF friendship challenge results! 🪨🐟`,
+              files: [file]
+            });
+            return true;
+          }
+          return false;
+        } catch (error) {
+          console.error('Error sharing image:', error);
+          return false;
+        }
+      }
+    };
+
     const gameManager = {
       async createRoom() {
         const playerNameInput = document.getElementById('playerName');
@@ -1243,13 +1731,11 @@
             throw new Error('Database not available');
           }
 
-          // Set up room with creator info
           await window.db.ref(`rooms/${gameState.roomCode}/settings`).set({
             creator: gameState.playerName,
             createdAt: Date.now()
           });
           
-          // Initialize game state
           await dbManager.updateGameState(GAME_STATES.SETUP);
           dbManager.listenForGameStateChanges();
           
@@ -1257,7 +1743,6 @@
           utils.showSuccess('auth-error', `Room created: ${gameState.roomCode} - Share this code with your friend!`);
           utils.announceToScreenReader(`Room created with code ${gameState.roomCode}`);
           
-          // Move to game setup
           this.showSection('question-setup-section');
         } catch (error) {
           console.error('Error creating room:', error);
@@ -1289,14 +1774,12 @@
             throw new Error('Database not available');
           }
 
-          // Check if room exists
           const snapshot = await window.db.ref(`rooms/${gameState.roomCode}/settings`).once('value');
           
           if (snapshot.exists()) {
             const settings = snapshot.val();
             const creatorName = settings.creator;
             
-            // Initialize game state for joiner
             await dbManager.updateGameState(GAME_STATES.SETUP);
             dbManager.listenForGameStateChanges();
             
@@ -1305,7 +1788,6 @@
             utils.showSuccess('room-error', `Joined room: ${gameState.roomCode}`);
             utils.announceToScreenReader(`Joined room ${gameState.roomCode}`);
             
-            // Check if game setup is already complete
             if (settings.requiredQuestionCount) {
               gameState.requiredQuestionCount = settings.requiredQuestionCount;
               this.enterQuestionMode();
@@ -1332,7 +1814,6 @@
           if (settings && settings.requiredQuestionCount && gameState.requiredQuestionCount !== settings.requiredQuestionCount) {
             gameState.requiredQuestionCount = settings.requiredQuestionCount;
             
-            // Start question creation if setup is complete
             if (document.getElementById('waiting-section').innerHTML.includes('Waiting for room creator')) {
               this.enterQuestionMode();
             }
@@ -1348,7 +1829,6 @@
             throw new Error('Database not available');
           }
 
-          // Update room settings
           await window.db.ref(`rooms/${gameState.roomCode}/settings`).update({
             requiredQuestionCount: gameState.requiredQuestionCount
           });
@@ -1363,10 +1843,8 @@
       enterQuestionMode() {
         this.showSection('question-section');
         
-        // Update game state
         dbManager.updateGameState(GAME_STATES.CREATING_QUESTIONS);
         
-        // Update UI to show required question count
         document.querySelector('#question-section h3').textContent = 
           `Add Your Questions (${gameState.requiredQuestionCount} required)`;
         
@@ -1375,12 +1853,10 @@
       },
 
       showSection(sectionId) {
-        // Hide all sections
         document.querySelectorAll('.section').forEach(section => {
           section.classList.add('hidden');
         });
         
-        // Show target section
         const targetSection = document.getElementById(sectionId);
         if (targetSection) {
           targetSection.classList.remove('hidden');
@@ -1392,7 +1868,6 @@
         const questions = AUTOMATED_QUESTIONS[intensity];
         const suggestedContainer = document.getElementById('suggested-questions');
         
-        // Get 3 random questions
         const randomQuestions = questions.sort(() => 0.5 - Math.random()).slice(0, 3);
         
         suggestedContainer.innerHTML = '<h5>Suggested Questions:</h5>' + 
@@ -1412,7 +1887,7 @@
         const qData = {
           question: questionData.q,
           options: questionData.opts,
-          correct: "" // User will need to select the correct answer
+          correct: ""
         };
         this.addQuestion(qData);
       },
@@ -1491,7 +1966,6 @@
         
         container.appendChild(div);
 
-        // Event listeners
         div.querySelector('.delete-btn').onclick = () => {
           div.remove();
           utils.announceToScreenReader(`Question ${questionIndex} deleted`);
@@ -1553,7 +2027,6 @@
           questions.push({ question: q, options: opts, correct });
         });
         
-        // Only take the required number of questions
         questions = questions.slice(0, gameState.requiredQuestionCount);
         
         if (hasErrors || questions.length < gameState.requiredQuestionCount) return;
@@ -1567,7 +2040,6 @@
             throw new Error('Database not available');
           }
 
-          // Save questions and update state
           await Promise.all([
             window.db.ref(`rooms/${gameState.roomCode}/questions/${gameState.playerName}`).set(questions),
             dbManager.updateGameState(GAME_STATES.QUESTIONS_SUBMITTED)
@@ -1594,7 +2066,6 @@
         reviewTimerDiv.style.display = 'inline';
         reviewTimerDiv.classList.remove('hidden');
         
-        // Enable editing during review
         document.querySelectorAll('.question-block input, .question-block select').forEach(el => {
           el.disabled = false;
         });
@@ -1607,11 +2078,14 @@
           const diff = gameState.reviewEndTime - Date.now();
           
           if (diff <= 0) {
-            // Timer ended naturally - mark review as completed
             clearInterval(gameState.reviewInterval);
             gameState.reviewCompleted = true;
             
-            reviewTimerDiv.innerHTML = "⏰ Reflection time ended!";
+            // Update the review timer to show waiting message
+            reviewTimerDiv.innerHTML = 
+              '⏰ Your review completed! Waiting for other player... <span id="wait-after-review" class="timer"></span>';
+            
+            // Disable all inputs
             document.querySelectorAll('.question-block input, .question-block select').forEach(el => {
               el.disabled = true;
             });
@@ -1619,7 +2093,16 @@
               btn.classList.remove('hidden');
             });
             
-            // Update state to review completed
+            // Hide add question and resubmit buttons
+            document.querySelectorAll('#question-section button').forEach(btn => {
+              if (btn.id !== 'pause-edit-btn' && !btn.classList.contains('edit-btn') && !btn.classList.contains('delete-btn')) {
+                btn.style.display = 'none';
+              }
+            });
+            
+            // Start a wait timer
+            this.startPostReviewWaitTimer();
+            
             dbManager.updateGameState(GAME_STATES.REVIEW_COMPLETED).then(() => {
               utils.showNotification("🕒 Your review time ended! Waiting for other player...");
               utils.announceToScreenReader('Review time ended. Waiting for other player.', true);
@@ -1637,7 +2120,28 @@
         };
 
         gameState.reviewInterval = setInterval(updateTimer, 1000);
-        updateTimer(); // Initial call
+        updateTimer();
+      },
+
+      startPostReviewWaitTimer() {
+        const waitStart = Date.now();
+        const waitTimerEl = document.getElementById('wait-after-review');
+        
+        const updateWaitTimer = () => {
+          if (!waitTimerEl) return;
+          
+          const diff = Date.now() - waitStart;
+          const minutes = Math.floor(diff / 60000);
+          const seconds = Math.floor((diff % 60000) / 1000);
+          waitTimerEl.textContent = `(${minutes}:${seconds < 10 ? '0' + seconds : seconds})`;
+          
+          // Check if we're still in question section
+          if (!document.getElementById('question-section').classList.contains('hidden')) {
+            setTimeout(updateWaitTimer, 1000);
+          }
+        };
+        
+        updateWaitTimer();
       },
 
       pauseAndEdit() {
@@ -1656,15 +2160,13 @@
       },
 
       transitionToAnswering() {
-        // Only transition if we're not already in answering state
         const currentSection = document.querySelector('.section:not(.hidden)');
         if (currentSection?.id === 'answer-section') {
-          return; // Already in answering phase
+          return;
         }
         
         utils.showNotification("🎯 Both players ready! Loading questions...");
         
-        // Clear timer if this player's review is complete
         if (gameState.reviewCompleted && gameState.reviewInterval) {
           clearInterval(gameState.reviewInterval);
         }
@@ -1675,10 +2177,8 @@
       },
 
       async startAnswering() {
-        // Update game state
         await dbManager.updateGameState(GAME_STATES.ANSWERING);
         
-        // Show answer section
         this.showSection('answer-section');
         document.getElementById('waiting-answers').classList.remove('hidden');
         
@@ -1689,7 +2189,6 @@
             throw new Error('Database not available');
           }
 
-          // Load all questions
           const snapshot = await window.db.ref(`rooms/${gameState.roomCode}/questions`).once('value');
           const allQuestions = snapshot.val();
           
@@ -1698,18 +2197,15 @@
             return;
           }
           
-          // Find the other player's questions
           const otherPlayer = Object.keys(allQuestions).find(name => name !== gameState.playerName);
           
           if (!otherPlayer || !allQuestions[otherPlayer]) {
-            // Questions not ready yet, wait for them
             this.showSection('waiting-section');
             this.startWaitingTimer();
             this.waitForOtherPlayerQuestions();
             return;
           }
           
-          // Questions are ready, show them
           document.getElementById('waiting-section').classList.add('hidden');
           document.getElementById('waiting-answers').classList.add('hidden');
           this.showQuestionsToAnswer(allQuestions[otherPlayer], otherPlayer);
@@ -1751,7 +2247,6 @@
           
           const otherPlayer = Object.keys(allQuestions).find(name => name !== gameState.playerName);
           if (otherPlayer && allQuestions[otherPlayer]) {
-            // Questions are now available
             questionsRef.off('value', questionListener);
             document.getElementById('waiting-section').classList.add('hidden');
             document.getElementById('waiting-answers').classList.add('hidden');
@@ -1791,7 +2286,6 @@
           
           container.appendChild(div);
           
-          // Add hover effects to labels
           div.querySelectorAll('label').forEach(label => {
             label.addEventListener('mouseenter', () => {
               label.style.backgroundColor = 'color-mix(in srgb, var(--color-accent) 10%, transparent)';
@@ -1836,7 +2330,6 @@
             throw new Error('Database not available');
           }
 
-          // Submit answers and update game state
           await Promise.all([
             window.db.ref(`rooms/${gameState.roomCode}/answers/${gameState.playerName}`).set(answers),
             dbManager.updateGameState(GAME_STATES.COMPLETED)
@@ -1859,15 +2352,12 @@
             throw new Error('Database not available');
           }
 
-          // Check if other player's answers are already available
           const snapshot = await window.db.ref(`rooms/${gameState.roomCode}/answers`).once('value');
           const allAnswers = snapshot.val();
           
           if (allAnswers && allAnswers[gameState.playerName] && allAnswers[otherPlayer]) {
-            // Both answers are ready
             this.loadQuestionsAndCalculateResults(myAnswers, otherPlayer, allAnswers[otherPlayer]);
           } else {
-            // Wait for other player's answers
             const answersRef = window.db.ref(`rooms/${gameState.roomCode}/answers`);
             const answerListener = answersRef.on('value', (snapshot) => {
               const allAnswers = snapshot.val();
@@ -1931,6 +2421,10 @@
         const percent = Math.round((correctCount / questions.length) * 100);
         const tag = this.getLevelTag(percent);
 
+        // Store my score
+        gameState.myScore = percent;
+        gameState.myTag = tag;
+
         let otherBreakdownHTML = '';
         let otherScoreHTML = '';
         let otherCorrectCount = 0;
@@ -1958,11 +2452,14 @@
           const otherPercent = Math.round((otherCorrectCount / questionsForOther.length) * 100);
           const otherTag = this.getLevelTag(otherPercent);
           
+          // Store other player's score
+          gameState.otherScore = otherPercent;
+          gameState.otherTag = otherTag;
+          
           otherScoreHTML = `<h4 style="margin-top: 32px;">${otherPlayer} scored ${otherPercent}% - ${otherTag}</h4>`;
           otherBreakdownHTML = `<h4>How ${otherPlayer} did on your questions:</h4>` + otherBreakdown;
         }
 
-        // Trigger confetti for high scores
         if (percent >= 90 || (otherPlayerAnswers && Math.round((otherCorrectCount / allQuestions[gameState.playerName].length) * 100) >= 90)) {
           this.createConfetti();
         }
@@ -1974,12 +2471,27 @@
             <h4>Your performance on ${otherPlayer}'s questions:</h4>
             ${breakdown}
             ${otherScoreHTML ? `<hr style="margin: 40px 0; border: 1px solid var(--border-input);">${otherScoreHTML}${otherBreakdownHTML}` : ""}
+            
+            <div style="text-align: center; margin-top: 40px; padding: 24px; background: var(--bg-card); border-radius: var(--border-radius-large); box-shadow: var(--shadow-medium);">
+              <h4 style="margin-bottom: 16px;">Share Your Results 🎉</h4>
+              <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+                <button onclick="shareResults('image')" style="background: #8B5CF6;">
+                  🖼️ Share Image
+                </button>
+                <button onclick="shareResults('download')" style="background: #10B981;">
+                  💾 Download Image
+                </button>
+                <button onclick="shareResults('copy')" style="background: #F59E0B;">
+                  📋 Copy Text
+                </button>
+              </div>
+              <div id="share-feedback" class="success-message hidden" style="margin-top: 12px;"></div>
+            </div>
           </div>
         `;
 
         utils.announceToScreenReader(`Results ready. You scored ${percent} percent - ${tag}`);
         
-        // Clean up listeners and schedule room cleanup
         this.cleanup();
       },
 
@@ -2017,18 +2529,15 @@
       },
 
       cleanup() {
-        // Clean up listeners
         if (gameState.gameStateListener) {
           gameState.gameStateListener.off();
           gameState.gameStateListener = null;
         }
         
-        // Clear timers
         if (gameState.reviewInterval) {
           clearInterval(gameState.reviewInterval);
         }
         
-        // Schedule room cleanup
         if (window.db && gameState.roomCode) {
           setTimeout(() => {
             window.db.ref(`rooms/${gameState.roomCode}`).remove()
@@ -2038,7 +2547,77 @@
       }
     };
 
-    // Modal Functions (Global scope for onclick handlers)
+    // Share Results Function (Global scope)
+    async function shareResults(method) {
+      const feedbackEl = document.getElementById('share-feedback');
+      
+      try {
+        switch(method) {
+          case 'image':
+            feedbackEl.textContent = '🎨 Generating image...';
+            feedbackEl.classList.remove('hidden');
+            
+            const imageDataUrl = shareManager.generateShareImage();
+            const shared = await shareManager.shareImage(imageDataUrl);
+            
+            if (shared) {
+              feedbackEl.textContent = '✅ Image shared successfully!';
+              utils.announceToScreenReader('Image shared successfully');
+            } else {
+              // Fallback to download if sharing not supported
+              await shareManager.downloadImage(imageDataUrl);
+              feedbackEl.textContent = '💾 Image downloaded! (Sharing not supported on this device)';
+              utils.announceToScreenReader('Image downloaded');
+            }
+            
+            setTimeout(() => feedbackEl.classList.add('hidden'), 3000);
+            break;
+            
+          case 'download':
+            feedbackEl.textContent = '💾 Generating image...';
+            feedbackEl.classList.remove('hidden');
+            
+            const downloadDataUrl = shareManager.generateShareImage();
+            await shareManager.downloadImage(downloadDataUrl);
+            
+            feedbackEl.textContent = '✅ Image downloaded successfully!';
+            utils.announceToScreenReader('Image downloaded successfully');
+            setTimeout(() => feedbackEl.classList.add('hidden'), 3000);
+            break;
+            
+          case 'copy':
+            let shareText = '🪨 DALORF Challenge Results 🐟\n\n';
+            
+            if (gameState.myScore !== null) {
+              shareText += `${gameState.playerName}: ${gameState.myScore}% - ${gameState.myTag}\n`;
+            }
+            
+            if (gameState.otherScore !== null) {
+              shareText += `${gameState.otherPlayerName}: ${gameState.otherScore}% - ${gameState.otherTag}\n`;
+            }
+            
+            shareText += '\nTest how well YOU know your friends at DALORF! 💖';
+            
+            await navigator.clipboard.writeText(shareText);
+            feedbackEl.textContent = '✅ Results copied to clipboard!';
+            feedbackEl.classList.remove('hidden');
+            utils.announceToScreenReader('Results copied to clipboard');
+            setTimeout(() => feedbackEl.classList.add('hidden'), 3000);
+            break;
+        }
+      } catch (error) {
+        console.error('Error sharing:', error);
+        feedbackEl.textContent = '❌ Failed to share. Please try again.';
+        feedbackEl.className = 'error-message';
+        feedbackEl.classList.remove('hidden');
+        setTimeout(() => {
+          feedbackEl.classList.add('hidden');
+          feedbackEl.className = 'success-message';
+        }, 3000);
+      }
+    }
+
+    // Modal Functions (Global scope)
     function showAboutName() {
       modalManager.show('about-name-modal');
     }
@@ -2055,7 +2634,7 @@
       modalManager.hide('instructions-modal');
     }
 
-    // Game Functions (Global scope for onclick handlers)
+    // Game Functions (Global scope)
     function createRoom() {
       gameManager.createRoom();
     }
@@ -2090,22 +2669,18 @@
 
     // Event Listeners
     document.addEventListener('DOMContentLoaded', function() {
-      // Initialize theme
       themeManager.init();
       
-      // Theme switch button
       const themeSwitchBtn = document.getElementById('theme-switch');
       if (themeSwitchBtn) {
         themeSwitchBtn.addEventListener('click', () => themeManager.toggle());
       }
       
-      // About button
       const aboutBtn = document.getElementById('about-name');
       if (aboutBtn) {
         aboutBtn.addEventListener('click', showAboutName);
       }
       
-      // Keyboard accessibility
       document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
           closeInstructions();
@@ -2113,7 +2688,6 @@
         }
       });
       
-      // Modal click outside to close
       window.addEventListener('click', function(event) {
         const instructionsModal = document.getElementById('instructions-modal');
         const aboutModal = document.getElementById('about-name-modal');
@@ -2126,7 +2700,6 @@
         }
       });
       
-      // Input auto-formatting
       const roomCodeInput = document.getElementById('roomCode');
       if (roomCodeInput) {
         roomCodeInput.addEventListener('input', function() {
@@ -2134,17 +2707,14 @@
         });
       }
       
-      // Performance logging
       const perfEnd = performance.now();
       console.log(`DALORF initialization completed in ${(perfEnd - perfStart).toFixed(2)}ms`);
     });
 
-    // Cleanup on page unload
     window.addEventListener('beforeunload', function() {
       gameManager.cleanup();
     });
 
-    // Error handling
     window.addEventListener('error', function(event) {
       console.error('JavaScript error:', event.error);
       utils.showNotification('An error occurred. Please refresh the page if issues persist.', 6000);
@@ -2157,6 +2727,7 @@
 
     // Expose necessary functions to global scope
     window.gameManager = gameManager;
+    window.shareManager = shareManager;
     window.showAboutName = showAboutName;
     window.closeAboutName = closeAboutName;
     window.showInstructions = showInstructions;
@@ -2169,6 +2740,7 @@
     window.submitQuestions = submitQuestions;
     window.pauseAndEdit = pauseAndEdit;
     window.submitAnswers = submitAnswers;
+    window.shareResults = shareResults;
   </script>
 </body>
 </html>
