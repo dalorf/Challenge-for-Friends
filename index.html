@@ -2248,78 +2248,174 @@
       },
 
       async attemptReconnect() {
-        const session = this.loadSession();
-        if (!session) return false;
-        
-        // Show reconnecting UI
-        const authSection = document.getElementById('auth-section');
-        authSection.innerHTML = `
-          <div class="loading-indicator">
-            <h3>🔄 Reconnecting...</h3>
-            <p>Restoring your game session</p>
-            <p><strong>Room:</strong> ${session.roomCode} | <strong>Player:</strong> ${session.playerName}</p>
-            <button onclick="sessionManager.cancelReconnect()" style="margin-top: 20px; background: #ef5350;">
-              Cancel & Start New Game
-            </button>
-          </div>
-        `;
-        
-        utils.announceToScreenReader('Reconnecting to your game session');
-        
-        try {
-          if (!window.db) {
-            throw new Error('Database not available');
-          }
+  const session = this.loadSession();
+  if (!session) return false;
+  
+  // Check session age
+  const sessionAge = Date.now() - session.timestamp;
+  
+  // Clear very old sessions (> 2 hours)
+  if (sessionAge > 2 * 60 * 60 * 1000) {
+    console.log('Session expired (>2 hours), clearing');
+    this.clearSession();
+    return false;
+  }
+  
+  // NEVER auto-reconnect - ALWAYS show prompt for user choice
+  // This prevents accidental reconnections on fresh page loads
+  console.log('Found session, showing reconnect prompt');
+  this.showReconnectPrompt(session);
+  return false; // Don't auto-reconnect
+},
 
-          // Check if room still exists
-          const roomSnapshot = await window.db.ref(`rooms/${session.roomCode}/settings`).once('value');
-          
-          if (!roomSnapshot.exists()) {
-            utils.showNotification('Your game session has expired. Starting fresh!');
-            this.clearSession();
-            location.reload();
-            return false;
-          }
-          
-          // Restore game state
-          gameState.playerName = session.playerName;
-          gameState.roomCode = session.roomCode;
-          gameState.requiredQuestionCount = session.requiredQuestionCount || 5;
-          
-          // Set up listeners
-          dbManager.listenForGameStateChanges();
-          dbManager.updateRoomInfo();
-          
-          // Check current game state
-          const stateSnapshot = await window.db.ref(`rooms/${session.roomCode}/gameState/${session.playerName}`).once('value');
-          const myState = stateSnapshot.val();
-          
-          if (!myState) {
-            // Player hasn't started yet
-            const settings = roomSnapshot.val();
-            if (settings.requiredQuestionCount) {
-              gameState.requiredQuestionCount = settings.requiredQuestionCount;
-              gameManager.enterQuestionMode();
-            } else {
-              gameManager.showSection('question-setup-section');
-            }
-          } else {
-            // Resume based on state
-            await this.resumeFromState(myState.state);
-          }
-          
-          utils.showNotification('✅ Successfully reconnected!');
-          utils.announceToScreenReader('Successfully reconnected to game');
-          return true;
-          
-        } catch (error) {
-          console.error('Reconnection failed:', error);
-          utils.showNotification('Failed to reconnect. Please start a new game.');
-          this.clearSession();
-          location.reload();
-          return false;
-        }
-      },
+showReconnectPrompt(session) {
+  const authSection = document.getElementById('auth-section');
+  const existingPrompt = document.getElementById('reconnect-prompt');
+  
+  if (existingPrompt) return; // Already showing prompt
+  
+  const sessionAge = Date.now() - session.timestamp;
+  const minutesAgo = Math.floor(sessionAge / 60000);
+  const timeAgoText = minutesAgo < 60 
+    ? `${minutesAgo} minute${minutesAgo !== 1 ? 's' : ''} ago`
+    : `${Math.floor(minutesAgo / 60)} hour${Math.floor(minutesAgo / 60) !== 1 ? 's' : ''} ago`;
+  
+  const prompt = document.createElement('div');
+  prompt.id = 'reconnect-prompt';
+  prompt.className = 'notification';
+  prompt.style.cssText = 'margin: 20px auto; max-width: 600px; position: relative; padding: 20px;';
+  prompt.innerHTML = `
+    <button onclick="sessionManager.cancelReconnect()" 
+            style="position: absolute; top: 12px; right: 12px; background: transparent; color: var(--text-primary); border: none; font-size: 1.3rem; padding: 4px 8px; cursor: pointer; line-height: 1;"
+            aria-label="Dismiss"
+            title="Start fresh">
+      ×
+    </button>
+    
+    <h4 style="margin: 0 0 12px 0; font-size: 1.2rem;">🔄 Previous Game Found</h4>
+    
+    <div style="background: var(--bg-card); padding: 12px; border-radius: 8px; margin: 12px 0;">
+      <p style="margin: 0 0 8px 0;">
+        <strong>Room Code:</strong> <code style="background: var(--color-accent-light); padding: 2px 8px; border-radius: 4px; font-size: 1.1rem;">${session.roomCode}</code>
+      </p>
+      <p style="margin: 0 0 8px 0;">
+        <strong>Your Name:</strong> ${session.playerName}
+      </p>
+      <p style="margin: 0 0 8px 0;">
+        <strong>Questions:</strong> ${session.requiredQuestionCount || 5} per player
+      </p>
+      <p style="margin: 0; color: var(--text-secondary); font-size: 0.9rem;">
+        <strong>Last active:</strong> ${timeAgoText}
+        ${sessionAge > 30 * 60 * 1000 ? ' <span style="color: var(--color-accent);">⚠️ Session may have expired</span>' : ''}
+      </p>
+    </div>
+    
+    <p style="margin: 12px 0; font-size: 0.95rem;">
+      Would you like to continue where you left off?
+    </p>
+    
+    <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+      <button onclick="sessionManager.performReconnect(${JSON.stringify(session).replace(/"/g, '&quot;')})" 
+              style="flex: 1; min-width: 180px; background: #10B981; font-size: 1.05rem; padding: 12px 20px;">
+        ↩️ Yes, Reconnect
+      </button>
+      <button onclick="sessionManager.cancelReconnect()" 
+              style="flex: 1; min-width: 180px; background: #6B7280; font-size: 1.05rem; padding: 12px 20px;">
+        ✨ No, Start Fresh
+      </button>
+    </div>
+  `;
+  
+  // Insert at top of auth section
+  authSection.insertBefore(prompt, authSection.firstChild);
+  
+  // Auto-scroll to prompt
+  setTimeout(() => {
+    prompt.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, 100);
+  
+  // Auto-dismiss after 60 seconds if no action taken
+  setTimeout(() => {
+    if (document.getElementById('reconnect-prompt')) {
+      console.log('Reconnect prompt timed out, auto-cancelling');
+      this.cancelReconnect();
+    }
+  }, 60000);
+},
+
+async performReconnect(session) {
+  // Remove prompt if showing
+  const prompt = document.getElementById('reconnect-prompt');
+  if (prompt) prompt.remove();
+  
+  // Show reconnecting UI
+  const authSection = document.getElementById('auth-section');
+  const loadingDiv = document.createElement('div');
+  loadingDiv.className = 'loading-indicator';
+  loadingDiv.innerHTML = `
+    <h3>🔄 Reconnecting...</h3>
+    <p>Restoring your game session</p>
+    <p><strong>Room:</strong> ${session.roomCode} | <strong>Player:</strong> ${session.playerName}</p>
+  `;
+  authSection.insertBefore(loadingDiv, authSection.firstChild);
+  
+  utils.announceToScreenReader('Reconnecting to your game session');
+  
+  try {
+    if (!window.db) {
+      throw new Error('Database not available');
+    }
+
+    // Check if room still exists
+    const roomSnapshot = await window.db.ref(`rooms/${session.roomCode}/settings`).once('value');
+    
+    if (!roomSnapshot.exists()) {
+      utils.showNotification('Your game session has expired. Starting fresh!');
+      this.clearSession();
+      loadingDiv.remove();
+      return false;
+    }
+    
+    // Restore game state
+    gameState.playerName = session.playerName;
+    gameState.roomCode = session.roomCode;
+    gameState.requiredQuestionCount = session.requiredQuestionCount || 5;
+    
+    // Set up listeners
+    dbManager.listenForGameStateChanges();
+    dbManager.updateRoomInfo();
+    
+    // Check current game state
+    const stateSnapshot = await window.db.ref(`rooms/${session.roomCode}/gameState/${session.playerName}`).once('value');
+    const myState = stateSnapshot.val();
+    
+    if (!myState) {
+      // Player hasn't started yet
+      const settings = roomSnapshot.val();
+      if (settings.requiredQuestionCount) {
+        gameState.requiredQuestionCount = settings.requiredQuestionCount;
+        gameManager.enterQuestionMode();
+      } else {
+        gameManager.showSection('question-setup-section');
+      }
+    } else {
+      // Resume based on state
+      await this.resumeFromState(myState.state);
+    }
+    
+    loadingDiv.remove();
+    utils.showNotification('✅ Successfully reconnected!');
+    utils.announceToScreenReader('Successfully reconnected to game');
+    return true;
+    
+  } catch (error) {
+    console.error('Reconnection failed:', error);
+    loadingDiv.remove();
+    utils.showNotification('Failed to reconnect. Please start a new game.');
+    this.clearSession();
+    return false;
+  }
+},
 
       async resumeFromState(state) {
         switch(state) {
@@ -2433,39 +2529,60 @@
   },
 
   async handleAuthUser(user) {
-    userState.currentUser = user;
-    userState.userId = user.uid;
-    userState.isAnonymous = user.isAnonymous;
-    
-    // Load or create user profile
-    const profileSnapshot = await window.db.ref(`users/${user.uid}/profile`).once('value');
-    
-    if (!profileSnapshot.exists()) {
-      // New user - create profile
-      await this.createUserProfile(user);
-    } else {
-      // Existing user - load profile
-      const profile = profileSnapshot.val();
-      userState.username = profile.username;
-      userState.displayName = profile.displayName;
-      userState.photoURL = profile.photoURL;
-    }
-    
-    // Load user stats
-    await this.loadUserStats();
-    
-    // Show profile button
-    // Show profile button (always visible)
-    const profileBtn = document.getElementById('profile-btn');
+  userState.currentUser = user;
+  userState.userId = user.uid;
+  userState.isAnonymous = user.isAnonymous;
+  
+  // Load or create user profile
+  const profileSnapshot = await window.db.ref(`users/${user.uid}/profile`).once('value');
+  
+  if (!profileSnapshot.exists()) {
+    // New user - create profile
+    await this.createUserProfile(user);
+  } else {
+    // Existing user - load profile
+    const profile = profileSnapshot.val();
+    userState.username = profile.username;
+    userState.displayName = profile.displayName;
+    userState.photoURL = profile.photoURL;
+  }
+  
+  // Load user stats
+  await this.loadUserStats();
+  
+  // Show profile button (always visible)
+  const profileBtn = document.getElementById('profile-btn');
+  if (profileBtn) {
     profileBtn.classList.remove('hidden');
     profileBtn.title = userState.isAnonymous ? 'Sign In / Create Account' : 'Your Profile & Stats';
-    
-    // IMPORTANT: Show room controls and hide auth prompt
+  }
+  
+  // Update UI with user info
+  this.updateAuthUI();
+  
+  // CRITICAL FIX: ALWAYS show room controls after successful auth
+  // This ensures users can create/join rooms after signing in
+  const authSection = document.getElementById('auth-section');
+  const roomControls = document.getElementById('room-controls');
+  
+  // Wait for DOM to be fully ready
+  await new Promise(resolve => setTimeout(resolve, 100));
+  
+  // Only show room controls if we're on the auth page (not in an active game)
+  if (authSection && !authSection.classList.contains('hidden')) {
     this.showRoomControls();
-    
-    // Update UI with user info
-    this.updateAuthUI();
-  },
+    console.log('✅ Room controls shown after auth');
+  } else {
+    console.log('ℹ️ Skipped showing room controls - user is in active game');
+  }
+  
+  // Log for debugging
+  console.log('User authenticated:', {
+    uid: user.uid,
+    displayName: userState.displayName,
+    isAnonymous: userState.isAnonymous
+  });
+},
 
   handleNoUser() {
     // Reset user state
@@ -2487,25 +2604,98 @@
   },
 
   showRoomControls() {
-    const authPrompt = document.getElementById('auth-required-prompt');
-    const roomControls = document.getElementById('room-controls');
+  const authPrompt = document.getElementById('auth-required-prompt');
+  const roomControls = document.getElementById('room-controls');
+  
+  if (!roomControls) {
+    console.error('❌ room-controls element not found in DOM');
+    return;
+  }
+  
+  // Hide auth prompt with smooth transition
+  if (authPrompt) {
+    authPrompt.style.opacity = '0';
+    authPrompt.style.transition = 'opacity 0.3s ease';
+    setTimeout(() => {
+      authPrompt.classList.add('hidden');
+      authPrompt.style.display = 'none';
+    }, 300);
+  }
+  
+  // Show room controls with forced visibility
+  roomControls.classList.remove('hidden');
+  roomControls.style.display = 'block';
+  roomControls.style.visibility = 'visible';
+  roomControls.style.opacity = '1';
+  roomControls.style.pointerEvents = 'auto';
+  
+  // Pre-fill name if available
+  const playerNameInput = document.getElementById('playerName');
+  if (playerNameInput && userState.displayName) {
+    playerNameInput.value = userState.displayName;
+  }
+  
+  // Clear any previous errors
+  const authError = document.getElementById('auth-error');
+  const roomError = document.getElementById('room-error');
+  if (authError) authError.classList.add('hidden');
+  if (roomError) roomError.classList.add('hidden');
+  
+  // Smart focus logic with better timing
+  setTimeout(() => {
+    // Only auto-focus if user isn't already typing somewhere
+    const activeElement = document.activeElement;
+    const isUserTyping = activeElement && 
+                         (activeElement.tagName === 'INPUT' || 
+                          activeElement.tagName === 'TEXTAREA');
     
-    if (authPrompt) authPrompt.classList.add('hidden');
-    if (roomControls) roomControls.classList.remove('hidden');
-    
-    // Pre-fill name if available
-    const playerNameInput = document.getElementById('playerName');
-    if (playerNameInput && userState.displayName) {
-      playerNameInput.value = userState.displayName;
+    if (isUserTyping) {
+      console.log('User already typing, skipping auto-focus');
+      return;
     }
-  },
+    
+    // If name is pre-filled, focus on room code field
+    // If name is empty, focus on name field
+    if (playerNameInput) {
+      if (playerNameInput.value && playerNameInput.value.trim().length > 0) {
+        // Name already filled - focus on room code
+        const roomCodeInput = document.getElementById('roomCode');
+        if (roomCodeInput) {
+          roomCodeInput.focus();
+          roomCodeInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      } else {
+        // Name empty - focus on name field
+        playerNameInput.focus();
+        playerNameInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+  }, 400);
+  
+  console.log('✅ Room controls shown and visible');
+},
 
   hideRoomControls() {
     const authPrompt = document.getElementById('auth-required-prompt');
     const roomControls = document.getElementById('room-controls');
     
-    if (authPrompt) authPrompt.classList.remove('hidden');
-    if (roomControls) roomControls.classList.add('hidden');
+    if (authPrompt) {
+      authPrompt.classList.remove('hidden');
+      authPrompt.style.display = 'block';
+    }
+    
+    if (roomControls) {
+      roomControls.classList.add('hidden');
+      roomControls.style.display = 'none';
+      
+      // Clear inputs
+      const playerNameInput = document.getElementById('playerName');
+      const roomCodeInput = document.getElementById('roomCode');
+      if (playerNameInput) playerNameInput.value = '';
+      if (roomCodeInput) roomCodeInput.value = '';
+    }
+    
+    console.log('Room controls hidden');
   },
 
   handleNoUser() {
@@ -2521,10 +2711,11 @@
     });
     
     // Hide profile button
-    document.getElementById('profile-btn').classList.add('hidden');
+    const profileBtn = document.getElementById('profile-btn');
+    if (profileBtn) profileBtn.classList.add('hidden');
     
-    // Show auth options
-    this.showAuthPrompt();
+    // IMPORTANT: Hide room controls and show auth prompt
+    this.hideRoomControls();
   },
 
   async createUserProfile(user) {
@@ -3037,10 +3228,13 @@
 
     const statsManager = {
   async saveGameResults(gameData) {
-    if (!userState.userId || userState.isAnonymous) {
-      console.log('Skipping stats save for anonymous user');
+    if (!userState.userId) {
+      console.log('No user ID - skipping stats save');
       return;
     }
+    
+    // Save basic stats even for anonymous users (in-memory)
+    // But skip leaderboard/partnership updates for anonymous users
 
     const {
       myScore,
@@ -3685,6 +3879,8 @@
           }
         }, duration);
       }
+
+      
     };
 
     const themeManager = {
@@ -3979,130 +4175,600 @@
     const gameManager = {
       async createRoom() {
   const createBtn = document.querySelector('button[onclick="createRoom()"]');
+  const joinBtn = document.querySelector('button[onclick="joinRoom()"]');
+  
+  if (!createBtn) {
+    console.error('Create button not found');
+    return;
+  }
+  
   const originalText = createBtn.textContent;
+  
+  // Disable BOTH buttons during creation to prevent double-submission
   createBtn.disabled = true;
+  if (joinBtn) joinBtn.disabled = true;
   createBtn.textContent = 'Creating...';
   
   const playerNameInput = document.getElementById('playerName');
   const roomCodeInput = document.getElementById('roomCode');
   
-  gameState.playerName = utils.sanitizeInput(playerNameInput.value, APP_CONFIG.MAX_NAME_LENGTH);
+  
+  // Get and sanitize inputs
+  const playerName = utils.sanitizeInput(playerNameInput.value, APP_CONFIG.MAX_NAME_LENGTH);
   const customCode = utils.sanitizeInput(roomCodeInput.value, APP_CONFIG.MAX_ROOM_CODE_LENGTH).toUpperCase();
   
-  if (!gameState.playerName) {
-    utils.showError('auth-error', 'Please enter your name');
+  // ===== VALIDATION IN CORRECT ORDER =====
+  
+  // 1. Validate player name first
+  if (!playerName) {
+    utils.showError('room-error', '❌ Please enter your name');
     playerNameInput.focus();
+    playerNameInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
     createBtn.disabled = false;
     createBtn.textContent = originalText;
     return;
   }
   
-  gameState.roomCode = customCode || utils.generateRoomCode();
-  roomCodeInput.value = gameState.roomCode;
+  if (playerName.length < 2) {
+    utils.showError('room-error', '❌ Name must be at least 2 characters');
+    playerNameInput.focus();
+    playerNameInput.select();
+    playerNameInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    createBtn.disabled = false;
+    createBtn.textContent = originalText;
+    return;
+  }
   
-  try {
-    if (!window.db) {
-      throw new Error('Database not available');
+  // 2. Validate custom room code format if provided
+  if (customCode) {
+    if (customCode.length < 3) {
+      utils.showError('room-error', '❌ Custom room code must be at least 3 characters');
+      roomCodeInput.focus();
+      roomCodeInput.select();
+      roomCodeInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      createBtn.disabled = false;
+      createBtn.textContent = originalText;
+      return;
     }
-
-    const sessionId = await statsManager.createSession(gameState.roomCode);
     
+    if (!/^[A-Z0-9]+$/.test(customCode)) {
+      utils.showError('room-error', '❌ Room code can only contain letters and numbers');
+      roomCodeInput.focus();
+      roomCodeInput.select();
+      roomCodeInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      createBtn.disabled = false;
+      createBtn.textContent = originalText;
+      return;
+    }
+  }
+  
+  // Set game state after validation
+gameState.playerName = playerName;
+
+// Generate or use custom room code
+gameState.roomCode = customCode || utils.generateRoomCode();
+roomCodeInput.value = gameState.roomCode;
+
+try {
+  if (!window.db) {
+    throw new Error('Database not available');
+  }
+
+  // 3. Check if custom code already exists
+  if (customCode) {
+    const existingRoom = await window.db.ref(`rooms/${gameState.roomCode}/settings`).once('value');
+    if (existingRoom.exists()) {
+      utils.showError('room-error', `❌ Room code "${gameState.roomCode}" already exists. Please choose a different code or leave empty for auto-generation.`);
+      roomCodeInput.focus();
+      roomCodeInput.select();
+      roomCodeInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      createBtn.disabled = false;
+      createBtn.textContent = originalText;
+      return;
+    }
+  }
+
+  // ===== CREATE ROOM SUCCESSFULLY =====
+    
+    // Create session for stats tracking (if authenticated)
+    let sessionId = null;
+    if (userState.userId && !userState.isAnonymous) {
+      sessionId = await statsManager.createSession(gameState.roomCode);
+    }
+    
+    // Create room in database
     await window.db.ref(`rooms/${gameState.roomCode}/settings`).set({
       creator: gameState.playerName,
       createdAt: Date.now(),
       sessionId: sessionId,
-      creatorUserId: userState.userId
+      creatorUserId: userState.userId || null,
+      roomCode: gameState.roomCode // Store for reference
     });
     
+    // Update game state
     await dbManager.updateGameState(GAME_STATES.SETUP);
+    
+    // Set up listeners
     dbManager.listenForGameStateChanges();
     
+    // Update room info display
     dbManager.updateRoomInfo();
-    utils.showSuccess('auth-error', `Room created: ${gameState.roomCode} - Share this code with your friend!`);
+    
+    // Save session for reconnection
+    sessionManager.saveSession();
+    
+    // Clear any previous errors first
+    const errorEl = document.getElementById('room-error');
+    if (errorEl) errorEl.classList.add('hidden');
+    
+    // Show success message with emphasis
+    utils.showSuccess('room-error', `✅ Room created: ${gameState.roomCode}`);
     utils.announceToScreenReader(`Room created with code ${gameState.roomCode}`);
     
+    // Show prominent notification with room code and instructions
+    setTimeout(() => {
+      utils.showNotification(
+        `🎉 Room ${gameState.roomCode} created!\n\n` +
+        `📋 Share this code with your friend\n` +
+        `⏳ They can join by entering the code and clicking "Join Room"`,
+        8000
+      );
+    }, 500);
+    
+    // Auto-select room code for easy copying
+    const roomCodeInput = document.getElementById('roomCode');
+    if (roomCodeInput && roomCodeInput.value) {
+      setTimeout(() => {
+        roomCodeInput.select();
+      }, 1000);
+    }
+    
+    // Move to question setup
     this.showSection('question-setup-section');
-    sessionManager.saveSession();
+    
+    console.log('✅ Room created successfully:', {
+      code: gameState.roomCode,
+      creator: gameState.playerName,
+      sessionId: sessionId
+    });
     
   } catch (error) {
     console.error('Error creating room:', error);
-    utils.showError('auth-error', 'Failed to create room. Please check your connection and try again.');
+    
+    // Provide more specific error messages with recovery actions
+    let errorMessage = '';
+    let showRetryButton = false;
+    
+    if (error.message.includes('Database not available')) {
+      errorMessage = '❌ Connection error. Please check your internet and try again.';
+      showRetryButton = true;
+    } else if (error.message.includes('permission') || error.code === 'PERMISSION_DENIED') {
+      errorMessage = '❌ Permission denied. Please refresh the page and sign in again.';
+    } else if (error.message.includes('network') || error.code === 'NETWORK_ERROR') {
+      errorMessage = '❌ Network error. Please check your internet connection.';
+      showRetryButton = true;
+    } else if (error.message.includes('already exists')) {
+      errorMessage = error.message; // Use our custom message
+      // Don't clear room code input - let user modify it
+    } else {
+      errorMessage = `❌ Failed to create room: ${error.message || 'Unknown error'}. Please try again.`;
+      showRetryButton = true;
+    }
+    
+    utils.showError('room-error', errorMessage);
+    
+    // Only reset room code if it's not a "already exists" error
+    if (!error.message.includes('already exists')) {
+      gameState.roomCode = null;
+      if (!customCode) {
+        roomCodeInput.value = ''; // Only clear if it was auto-generated
+      }
+    }
+    
+    // Add retry hint for recoverable errors
+    if (showRetryButton) {
+      setTimeout(() => {
+        const errorEl = document.getElementById('room-error');
+        if (errorEl && errorEl.textContent.includes(errorMessage)) {
+          errorEl.innerHTML += '<br><small style="opacity: 0.8;">💡 Tip: Try refreshing the page if this persists</small>';
+        }
+      }, 500);
+    }
+    
   } finally {
+    // Re-enable both buttons
     createBtn.disabled = false;
+    if (joinBtn) joinBtn.disabled = false;
     createBtn.textContent = originalText;
   }
 },
 
       async joinRoom() {
-  const createBtn = document.querySelector('button[onclick="joinRoom()"]');
-  const originalText = createBtn.textContent;
-  createBtn.disabled = true;
-  createBtn.textContent = 'Creating...';
+  const joinBtn = document.querySelector('button[onclick="joinRoom()"]');
+  const createBtn = document.querySelector('button[onclick="createRoom()"]');
+  
+  if (!joinBtn) {
+    console.error('Join button not found');
+    return;
+  }
+  
+  const originalText = joinBtn.textContent;
+  
+  // Disable BOTH buttons to prevent double-submission
+  joinBtn.disabled = true;
+  if (createBtn) createBtn.disabled = true;
+  joinBtn.textContent = 'Joining...';
   
   const playerNameInput = document.getElementById('playerName');
   const roomCodeInput = document.getElementById('roomCode');
   
-  gameState.playerName = utils.sanitizeInput(playerNameInput.value, APP_CONFIG.MAX_NAME_LENGTH);
-  const customCode = utils.sanitizeInput(roomCodeInput.value, APP_CONFIG.MAX_ROOM_CODE_LENGTH).toUpperCase();
-  
-  if (!gameState.playerName) {
-    utils.showError('auth-error', 'Please enter your name');
-    playerNameInput.focus();
-    createBtn.disabled = false;
-    createBtn.textContent = originalText;
+  if (!playerNameInput || !roomCodeInput) {
+    console.error('Required input elements not found');
+    joinBtn.disabled = false;
+    if (createBtn) createBtn.disabled = false;
+    joinBtn.textContent = originalText;
     return;
   }
   
-  gameState.roomCode = customCode || utils.generateRoomCode();
-  roomCodeInput.value = gameState.roomCode;
+  // Get and sanitize inputs
+  const playerName = utils.sanitizeInput(playerNameInput.value, APP_CONFIG.MAX_NAME_LENGTH);
+  const roomCode = utils.sanitizeInput(roomCodeInput.value, APP_CONFIG.MAX_ROOM_CODE_LENGTH).toUpperCase();
+  
+  // ===== PHASE 1: CLIENT-SIDE VALIDATION (Fast fails, no DB calls) =====
+  
+  // 1.1 Validate room code format first (empty check)
+  if (!roomCode) {
+    utils.showError('room-error', '❌ Please enter a room code to join');
+    roomCodeInput.focus();
+    roomCodeInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    joinBtn.disabled = false;
+    if (createBtn) createBtn.disabled = false;
+    joinBtn.textContent = originalText;
+    return;
+  }
+  
+  // 1.2 Validate room code length
+  if (roomCode.length < 3) {
+    utils.showError('room-error', '❌ Room code is too short (minimum 3 characters)');
+    roomCodeInput.focus();
+    roomCodeInput.select();
+    roomCodeInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    joinBtn.disabled = false;
+    if (createBtn) createBtn.disabled = false;
+    joinBtn.textContent = originalText;
+    return;
+  }
+  
+  // 1.3 Validate room code format (alphanumeric only)
+  if (!/^[A-Z0-9]+$/.test(roomCode)) {
+    utils.showError('room-error', '❌ Room code can only contain letters and numbers');
+    roomCodeInput.focus();
+    roomCodeInput.select();
+    roomCodeInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    joinBtn.disabled = false;
+    if (createBtn) createBtn.disabled = false;
+    joinBtn.textContent = originalText;
+    return;
+  }
+  
+  // 1.4 Validate player name (empty check)
+  if (!playerName) {
+    utils.showError('room-error', '❌ Please enter your name before joining');
+    playerNameInput.focus();
+    playerNameInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    joinBtn.disabled = false;
+    if (createBtn) createBtn.disabled = false;
+    joinBtn.textContent = originalText;
+    return;
+  }
+  
+  // 1.5 Validate player name length
+  if (playerName.length < 2) {
+    utils.showError('room-error', '❌ Name must be at least 2 characters');
+    playerNameInput.focus();
+    playerNameInput.select();
+    playerNameInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    joinBtn.disabled = false;
+    if (createBtn) createBtn.disabled = false;
+    joinBtn.textContent = originalText;
+    return;
+  }
+  
+  // 1.6 Validate player name format (no special characters that could break Firebase paths)
+  if (/[.$#\[\]\/]/.test(playerName)) {
+    utils.showError('room-error', '❌ Name cannot contain special characters: . $ # [ ] /');
+    playerNameInput.focus();
+    playerNameInput.select();
+    playerNameInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    joinBtn.disabled = false;
+    if (createBtn) createBtn.disabled = false;
+    joinBtn.textContent = originalText;
+    return;
+  }
+  
+  // ===== PHASE 2: DATABASE VALIDATION (Network calls - do NOT set gameState yet) =====
   
   try {
+    // 2.1 Check Firebase availability
     if (!window.db) {
       throw new Error('Database not available');
     }
 
-    const sessionId = await statsManager.createSession(gameState.roomCode);
+    // Show checking status (visual feedback for network operation)
+    utils.showSuccess('room-error', `🔍 Checking room "${roomCode}"...`);
+
+    // 2.2 CRITICAL: Check if room exists FIRST (before any other DB operations)
+    const roomSnapshot = await window.db.ref(`rooms/${roomCode}/settings`).once('value');
     
-    await window.db.ref(`rooms/${gameState.roomCode}/settings`).set({
-      creator: gameState.playerName,
-      createdAt: Date.now(),
-      sessionId: sessionId,
-      creatorUserId: userState.userId
+    if (!roomSnapshot.exists()) {
+      utils.showError('room-error', 
+        `❌ Room "${roomCode}" does not exist.\n\n` +
+        `Please check the code and try again, or create a new room.`
+      );
+      roomCodeInput.focus();
+      roomCodeInput.select();
+      roomCodeInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      joinBtn.disabled = false;
+      if (createBtn) createBtn.disabled = false;
+      joinBtn.textContent = originalText;
+      return;
+    }
+    
+    const roomSettings = roomSnapshot.val();
+    
+    // 2.3 Get existing players in the room
+    const gameStateSnapshot = await window.db.ref(`rooms/${roomCode}/gameState`).once('value');
+    const existingPlayers = gameStateSnapshot.val();
+    const playerList = existingPlayers ? Object.keys(existingPlayers) : [];
+    
+    console.log('📋 Room state:', {
+      roomCode: roomCode,
+      existingPlayers: playerList,
+      attemptingToJoin: playerName,
+      capacity: `${playerList.length}/2`
     });
     
+    // 2.4 Determine if user is reconnecting or joining fresh
+    const alreadyInRoom = playerList.includes(playerName);
+    
+    if (alreadyInRoom) {
+      // ===== RECONNECTION SCENARIO =====
+      console.log('✅ Player reconnecting to their game:', playerName);
+      
+      // Check current game state
+      const myGameState = existingPlayers[playerName];
+      const isGameActive = myGameState && 
+                           myGameState.state !== GAME_STATES.SETUP &&
+                           myGameState.state !== GAME_STATES.COMPLETED;
+      
+      // Show reconnection confirmation with detailed info
+      const stateDescription = myGameState?.state ? 
+        ` (Current state: ${myGameState.state})` : '';
+      
+      const message = isGameActive 
+        ? `🎮 You have an active game in this room!${stateDescription}\n\n` +
+          `Your Options:\n` +
+          `✅ Reconnect - Continue your game from where you left off\n` +
+          `❌ Start Fresh - Delete all progress and start over\n\n` +
+          `⚠️ Warning: Starting fresh will lose all your questions and progress!\n\n` +
+          `Click OK to RECONNECT, or Cancel to START FRESH.`
+        : `💾 You were previously in this room.${stateDescription}\n\n` +
+          `Your Options:\n` +
+          `✅ Reconnect - Return to this room\n` +
+          `❌ Start Fresh - Clear old data and start over\n\n` +
+          `Click OK to RECONNECT, or Cancel to START FRESH.`;
+      
+      const shouldReconnect = confirm(message);
+      
+      if (!shouldReconnect) {
+        // User wants to start fresh - remove old state
+        console.log('🔄 Player chose to start fresh - clearing old data');
+        
+        utils.showSuccess('room-error', '🗑️ Clearing your old data...');
+        
+        await Promise.all([
+          window.db.ref(`rooms/${roomCode}/gameState/${playerName}`).remove(),
+          window.db.ref(`rooms/${roomCode}/questions/${playerName}`).remove(),
+          window.db.ref(`rooms/${roomCode}/answers/${playerName}`).remove()
+        ]);
+        
+        console.log('✅ Old data cleared successfully');
+        utils.showSuccess('room-error', '✅ Old data cleared. Joining fresh...');
+      } else {
+        console.log('↩️ Player chose to reconnect to existing game');
+      }
+      
+    } else {
+      // ===== NEW PLAYER JOINING =====
+      console.log('🆕 New player attempting to join:', playerName);
+      
+      // 2.5 Check room capacity (CRITICAL - must enforce 2 player limit)
+      if (playerList.length >= 2) {
+        const playerNames = playerList.join(' and ');
+        utils.showError('room-error', 
+          `❌ Room "${roomCode}" is full!\n\n` +
+          `Current players (2/2):\n` +
+          `• ${playerList[0]}\n` +
+          `• ${playerList[1]}\n\n` +
+          `Please:\n` +
+          `✨ Create a new room instead, or\n` +
+          `🔍 Ask for a different room code`
+        );
+        roomCodeInput.focus();
+        roomCodeInput.select();
+        roomCodeInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        joinBtn.disabled = false;
+        if (createBtn) createBtn.disabled = false;
+        joinBtn.textContent = originalText;
+        return;
+      }
+      
+      // 2.6 Check for name collision within room
+      const nameCollision = playerList.some(existingName => 
+        existingName.toLowerCase() === playerName.toLowerCase()
+      );
+      
+      if (nameCollision) {
+        utils.showError('room-error', 
+          `❌ Name "${playerName}" is already taken in this room.\n\n` +
+          `Please choose a different name.`
+        );
+        playerNameInput.focus();
+        playerNameInput.select();
+        playerNameInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        joinBtn.disabled = false;
+        if (createBtn) createBtn.disabled = false;
+        joinBtn.textContent = originalText;
+        return;
+      }
+      
+      console.log('✅ Room has space - proceeding with join');
+    }
+    
+    // ===== PHASE 3: ALL VALIDATION PASSED - SET GAME STATE =====
+    // This is the ONLY place we set gameState - after all checks pass
+    console.log('✅ All validation passed - setting game state');
+    
+    gameState.playerName = playerName;
+    gameState.roomCode = roomCode;
+    
+    // ===== PHASE 4: JOIN SUCCESSFUL - PROCEED WITH GAME SETUP =====
+    
+    // 4.1 Add player to session if exists (for stats tracking)
+    if (roomSettings.sessionId && userState.userId && !userState.isAnonymous) {
+      try {
+        await statsManager.addPlayerToSession(roomSettings.sessionId, userState.userId);
+        console.log('✅ Added to session:', roomSettings.sessionId);
+      } catch (error) {
+        console.warn('Failed to add to session (non-critical):', error);
+      }
+    }
+    
+    // 4.2 Update game state in Firebase
     await dbManager.updateGameState(GAME_STATES.SETUP);
+    
+    // 4.3 Set up real-time listeners for game updates
     dbManager.listenForGameStateChanges();
     
+    // 4.4 Update room info display
     dbManager.updateRoomInfo();
-    utils.showSuccess('auth-error', `Room created: ${gameState.roomCode} - Share this code with your friend!`);
-    utils.announceToScreenReader(`Room created with code ${gameState.roomCode}`);
     
-    this.showSection('question-setup-section');
+    // 4.5 Save session for reconnection capability
     sessionManager.saveSession();
     
+    // 4.6 Show success message
+    utils.showSuccess('room-error', `✅ Successfully joined room: ${gameState.roomCode}`);
+    utils.announceToScreenReader(`Joined room ${gameState.roomCode}`);
+    
+    // 4.7 Determine next screen based on game state
+    if (roomSettings.requiredQuestionCount && roomSettings.requiredQuestionCount > 0) {
+      // Game setup already done by creator - go to appropriate screen
+      gameState.requiredQuestionCount = roomSettings.requiredQuestionCount;
+      
+      if (alreadyInRoom) {
+        // Reconnecting - check what state we were in
+        const myState = existingPlayers[playerName];
+        if (myState && myState.state) {
+          console.log('↩️ Resuming from state:', myState.state);
+          await sessionManager.resumeFromState(myState.state);
+        } else {
+          // Default to question mode
+          console.log('📝 No saved state - entering question mode');
+          gameManager.enterQuestionMode();
+        }
+      } else {
+        // New join - go to question mode
+        console.log('📝 Joined game in progress - entering question mode');
+        gameManager.enterQuestionMode();
+      }
+    } else {
+      // Wait for room creator to set up the game
+      console.log('⏳ Waiting for room creator to configure game');
+      gameManager.showSection('waiting-section');
+      document.getElementById('waiting-section').innerHTML = 
+        '<div class="loading-indicator">' +
+        '⏳ Waiting for room creator to set up the game...<br>' +
+        '<span style="font-size: 0.9rem; opacity: 0.8;">They need to choose the number of questions</span>' +
+        '</div>';
+      
+      gameManager.listenForRoomUpdates();
+    }
+    
+    console.log('✅ Join room completed successfully:', {
+      player: playerName,
+      room: roomCode,
+      playerCount: playerList.length + 1
+    });
+    
   } catch (error) {
-    console.error('Error creating room:', error);
-    utils.showError('auth-error', 'Failed to create room. Please check your connection and try again.');
+    // ===== PHASE 5: ERROR HANDLING =====
+    console.error('❌ Error joining room:', error);
+    
+    // Provide specific error messages based on error type
+    let errorMessage = '';
+    let shouldClearInputs = false;
+    
+    if (error.message.includes('Database not available')) {
+      errorMessage = '❌ Connection Error\n\n' +
+                    'Cannot connect to the game server.\n' +
+                    'Please check your internet connection and try again.';
+      shouldClearInputs = false;
+    } else if (error.message.includes('permission') || error.code === 'PERMISSION_DENIED') {
+      errorMessage = '❌ Permission Denied\n\n' +
+                    'You don\'t have permission to access this room.\n' +
+                    'Please refresh the page and sign in again.';
+      shouldClearInputs = true;
+    } else if (error.message.includes('network') || error.code === 'NETWORK_ERROR') {
+      errorMessage = '❌ Network Error\n\n' +
+                    'Lost connection to the server.\n' +
+                    'Please check your internet and try again.';
+      shouldClearInputs = false;
+    } else if (error.message.includes('full')) {
+      errorMessage = error.message; // Use our custom room full message
+      shouldClearInputs = false;
+    } else if (error.message.includes('does not exist')) {
+      errorMessage = error.message; // Use our custom room not found message
+      shouldClearInputs = false;
+    } else {
+      errorMessage = `❌ Failed to join room\n\n` +
+                    `${error.message || 'Unknown error occurred'}\n\n` +
+                    `Please try again or create a new room.`;
+      shouldClearInputs = false;
+    }
+    
+    utils.showError('room-error', errorMessage);
+    
+    // Clean up on critical errors
+    if (shouldClearInputs) {
+      playerNameInput.value = '';
+      roomCodeInput.value = '';
+      gameState.playerName = null;
+      gameState.roomCode = null;
+    }
+    
+    // Add recovery hint for network errors
+    if (error.message.includes('network') || error.message.includes('Connection')) {
+      setTimeout(() => {
+        const errorEl = document.getElementById('room-error');
+        if (errorEl && errorEl.textContent.includes('Connection')) {
+          const hint = document.createElement('div');
+          hint.style.cssText = 'margin-top: 12px; font-size: 0.9rem; opacity: 0.8;';
+          hint.innerHTML = '💡 <strong>Tip:</strong> Try refreshing the page if this persists';
+          errorEl.appendChild(hint);
+        }
+      }, 500);
+    }
+    
   } finally {
-    createBtn.disabled = false;
-    createBtn.textContent = originalText;
+    // ===== PHASE 6: CLEANUP =====
+    // Always re-enable buttons, regardless of success or failure
+    joinBtn.disabled = false;
+    if (createBtn) createBtn.disabled = false;
+    joinBtn.textContent = originalText;
+    
+    console.log('🔧 Join room cleanup completed');
   }
 },
-
-      listenForRoomUpdates() {
-        if (!window.db) return;
-        
-        window.db.ref(`rooms/${gameState.roomCode}/settings`).on('value', (snapshot) => {
-          const settings = snapshot.val();
-          if (settings && settings.requiredQuestionCount && gameState.requiredQuestionCount !== settings.requiredQuestionCount) {
-            gameState.requiredQuestionCount = settings.requiredQuestionCount;
-            
-            if (document.getElementById('waiting-section').innerHTML.includes('Waiting for room creator')) {
-              this.enterQuestionMode();
-            }
-          }
-        });
-      },
 
       async startGameSetup() {
         gameState.requiredQuestionCount = parseInt(document.getElementById('questionCount').value);
@@ -5767,7 +6433,20 @@ function formatDate(timestamp) {
       const roomCodeInput = document.getElementById('roomCode');
       if (roomCodeInput) {
         roomCodeInput.addEventListener('input', function() {
-          this.value = this.value.toUpperCase();
+          // Remove spaces and convert to uppercase
+          this.value = this.value.replace(/\s+/g, '').toUpperCase();
+          
+          // Remove invalid characters (only allow letters and numbers)
+          this.value = this.value.replace(/[^A-Z0-9]/g, '');
+        });
+        
+        // Also clean on paste
+        roomCodeInput.addEventListener('paste', function(e) {
+          e.preventDefault();
+          const pastedText = (e.clipboardData || window.clipboardData).getData('text');
+          const cleaned = pastedText.replace(/\s+/g, '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+          this.value = cleaned;
+          this.dispatchEvent(new Event('input')); // Trigger input validation
         });
       }
       
