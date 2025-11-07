@@ -2455,7 +2455,10 @@
     await this.loadUserStats();
     
     // Show profile button
-    document.getElementById('profile-btn').classList.remove('hidden');
+    // Show profile button (always visible)
+    const profileBtn = document.getElementById('profile-btn');
+    profileBtn.classList.remove('hidden');
+    profileBtn.title = userState.isAnonymous ? 'Sign In / Create Account' : 'Your Profile & Stats';
     
     // IMPORTANT: Show room controls and hide auth prompt
     this.showRoomControls();
@@ -3861,17 +3864,23 @@
       },
 
       updateRoomInfo() {
-        const roomInfo = document.getElementById('room-info-display');
-        const roomDetails = document.getElementById('room-details');
-        
-        let content = `🏠 Room: ${gameState.roomCode} | 👤 You: ${gameState.playerName}`;
-        if (gameState.otherPlayerName) {
-          content += ` | 👥 Joined: ${gameState.otherPlayerName}`;
-        }
-        
-        roomDetails.textContent = content;
-        roomInfo.classList.remove('hidden');
-      }
+  const roomInfo = document.getElementById('room-info-display');
+  const roomDetails = document.getElementById('room-details');
+  
+  let content = `
+    🏠 Room: <strong>${gameState.roomCode}</strong> 
+    <button onclick="copyRoomCode()" style="padding: 4px 12px; font-size: 0.85rem; margin: 0 8px; border-radius: 6px;">
+      📋 Copy
+    </button>
+    | 👤 You: ${gameState.playerName}`;
+  
+  if (gameState.otherPlayerName) {
+    content += ` | 👥 Joined: ${gameState.otherPlayerName}`;
+  }
+  
+  roomDetails.innerHTML = content;
+  roomInfo.classList.remove('hidden');
+}
     };
 
     const shareManager = {
@@ -3969,122 +3978,116 @@
 
     const gameManager = {
       async createRoom() {
-        const playerNameInput = document.getElementById('playerName');
-        const roomCodeInput = document.getElementById('roomCode');
-        
-        gameState.playerName = utils.sanitizeInput(playerNameInput.value, APP_CONFIG.MAX_NAME_LENGTH);
-        const customCode = utils.sanitizeInput(roomCodeInput.value, APP_CONFIG.MAX_ROOM_CODE_LENGTH).toUpperCase();
-        
-        if (!gameState.playerName) {
-          utils.showError('auth-error', 'Please enter your name');
-          playerNameInput.focus();
-          return;
-        }
-        
-        gameState.roomCode = customCode || utils.generateRoomCode();
-        roomCodeInput.value = gameState.roomCode;
-        
-        try {
-          if (!window.db) {
-            throw new Error('Database not available');
-          }
+  const createBtn = document.querySelector('button[onclick="createRoom()"]');
+  const originalText = createBtn.textContent;
+  createBtn.disabled = true;
+  createBtn.textContent = 'Creating...';
+  
+  const playerNameInput = document.getElementById('playerName');
+  const roomCodeInput = document.getElementById('roomCode');
+  
+  gameState.playerName = utils.sanitizeInput(playerNameInput.value, APP_CONFIG.MAX_NAME_LENGTH);
+  const customCode = utils.sanitizeInput(roomCodeInput.value, APP_CONFIG.MAX_ROOM_CODE_LENGTH).toUpperCase();
+  
+  if (!gameState.playerName) {
+    utils.showError('auth-error', 'Please enter your name');
+    playerNameInput.focus();
+    createBtn.disabled = false;
+    createBtn.textContent = originalText;
+    return;
+  }
+  
+  gameState.roomCode = customCode || utils.generateRoomCode();
+  roomCodeInput.value = gameState.roomCode;
+  
+  try {
+    if (!window.db) {
+      throw new Error('Database not available');
+    }
 
-          // Create session for multi-round tracking
-          const sessionId = await statsManager.createSession(gameState.roomCode);
-          
-          await window.db.ref(`rooms/${gameState.roomCode}/settings`).set({
-            creator: gameState.playerName,
-            createdAt: Date.now(),
-            sessionId: sessionId,
-            creatorUserId: userState.userId
-          });
-          
-          await dbManager.updateGameState(GAME_STATES.SETUP);
-          dbManager.listenForGameStateChanges();
-          
-          dbManager.updateRoomInfo();
-          utils.showSuccess('auth-error', `Room created: ${gameState.roomCode} - Share this code with your friend!`);
-          utils.announceToScreenReader(`Room created with code ${gameState.roomCode}`);
-          
-          this.showSection('question-setup-section');
-          
-          // Save session for reconnection
-          sessionManager.saveSession();
-        } catch (error) {
-          console.error('Error creating room:', error);
-          utils.showError('auth-error', 'Failed to create room. Please check your connection and try again.');
-        }
-      },
+    const sessionId = await statsManager.createSession(gameState.roomCode);
+    
+    await window.db.ref(`rooms/${gameState.roomCode}/settings`).set({
+      creator: gameState.playerName,
+      createdAt: Date.now(),
+      sessionId: sessionId,
+      creatorUserId: userState.userId
+    });
+    
+    await dbManager.updateGameState(GAME_STATES.SETUP);
+    dbManager.listenForGameStateChanges();
+    
+    dbManager.updateRoomInfo();
+    utils.showSuccess('auth-error', `Room created: ${gameState.roomCode} - Share this code with your friend!`);
+    utils.announceToScreenReader(`Room created with code ${gameState.roomCode}`);
+    
+    this.showSection('question-setup-section');
+    sessionManager.saveSession();
+    
+  } catch (error) {
+    console.error('Error creating room:', error);
+    utils.showError('auth-error', 'Failed to create room. Please check your connection and try again.');
+  } finally {
+    createBtn.disabled = false;
+    createBtn.textContent = originalText;
+  }
+},
 
       async joinRoom() {
-        const playerNameInput = document.getElementById('playerName');
-        const roomCodeInput = document.getElementById('roomCode');
-        
-        gameState.playerName = utils.sanitizeInput(playerNameInput.value, APP_CONFIG.MAX_NAME_LENGTH);
-        gameState.roomCode = utils.sanitizeInput(roomCodeInput.value, APP_CONFIG.MAX_ROOM_CODE_LENGTH).toUpperCase();
-        
-        if (!gameState.playerName) {
-          utils.showError('auth-error', 'Please enter your name');
-          playerNameInput.focus();
-          return;
-        }
-        
-        if (!gameState.roomCode) {
-          utils.showError('room-error', 'Please enter the room code');
-          roomCodeInput.focus();
-          return;
-        }
-        
-        try {
-          if (!window.db) {
-            throw new Error('Database not available');
-          }
+  const createBtn = document.querySelector('button[onclick="joinRoom()"]');
+  const originalText = createBtn.textContent;
+  createBtn.disabled = true;
+  createBtn.textContent = 'Creating...';
+  
+  const playerNameInput = document.getElementById('playerName');
+  const roomCodeInput = document.getElementById('roomCode');
+  
+  gameState.playerName = utils.sanitizeInput(playerNameInput.value, APP_CONFIG.MAX_NAME_LENGTH);
+  const customCode = utils.sanitizeInput(roomCodeInput.value, APP_CONFIG.MAX_ROOM_CODE_LENGTH).toUpperCase();
+  
+  if (!gameState.playerName) {
+    utils.showError('auth-error', 'Please enter your name');
+    playerNameInput.focus();
+    createBtn.disabled = false;
+    createBtn.textContent = originalText;
+    return;
+  }
+  
+  gameState.roomCode = customCode || utils.generateRoomCode();
+  roomCodeInput.value = gameState.roomCode;
+  
+  try {
+    if (!window.db) {
+      throw new Error('Database not available');
+    }
 
-          const snapshot = await window.db.ref(`rooms/${gameState.roomCode}/settings`).once('value');
-          
-          if (snapshot.exists()) {
-            const settings = snapshot.val();
-            const creatorName = settings.creator;
-            
-            // Track opponent userId for stats
-            if (settings.creatorUserId) {
-              gameState.opponentUserId = settings.creatorUserId;
-              gameState.opponentName = creatorName;
-            }
-            
-            // Add self to session if it exists
-            if (settings.sessionId && userState.userId) {
-              await statsManager.addPlayerToSession(settings.sessionId, userState.userId);
-            }
-            
-            await dbManager.updateGameState(GAME_STATES.SETUP);
-            dbManager.listenForGameStateChanges();
-            
-            utils.showNotification(`${gameState.playerName} joined room ${gameState.roomCode}!`);
-            dbManager.updateRoomInfo();
-            utils.showSuccess('room-error', `Joined room: ${gameState.roomCode}`);
-            utils.announceToScreenReader(`Joined room ${gameState.roomCode}`);
-            
-            if (settings.requiredQuestionCount) {
-              gameState.requiredQuestionCount = settings.requiredQuestionCount;
-              this.enterQuestionMode();
-              
-              // Save session for reconnection
-              sessionManager.saveSession();
-            } else {
-              this.showSection('waiting-section');
-              document.getElementById('waiting-section').innerHTML = 
-                '<div class="loading-indicator">⏳ Waiting for room creator to set up the game...</div>';
-              this.listenForRoomUpdates();
-            }
-          } else {
-            utils.showError('room-error', 'Room not found. Please check the code.');
-          }
-        } catch (error) {
-          console.error('Error joining room:', error);
-          utils.showError('room-error', 'Failed to join room. Please check your connection and try again.');
-        }
-      },
+    const sessionId = await statsManager.createSession(gameState.roomCode);
+    
+    await window.db.ref(`rooms/${gameState.roomCode}/settings`).set({
+      creator: gameState.playerName,
+      createdAt: Date.now(),
+      sessionId: sessionId,
+      creatorUserId: userState.userId
+    });
+    
+    await dbManager.updateGameState(GAME_STATES.SETUP);
+    dbManager.listenForGameStateChanges();
+    
+    dbManager.updateRoomInfo();
+    utils.showSuccess('auth-error', `Room created: ${gameState.roomCode} - Share this code with your friend!`);
+    utils.announceToScreenReader(`Room created with code ${gameState.roomCode}`);
+    
+    this.showSection('question-setup-section');
+    sessionManager.saveSession();
+    
+  } catch (error) {
+    console.error('Error creating room:', error);
+    utils.showError('auth-error', 'Failed to create room. Please check your connection and try again.');
+  } finally {
+    createBtn.disabled = false;
+    createBtn.textContent = originalText;
+  }
+},
 
       listenForRoomUpdates() {
         if (!window.db) return;
@@ -4141,15 +4144,25 @@
       },
 
       showSection(sectionId) {
-        document.querySelectorAll('.section').forEach(section => {
-          section.classList.add('hidden');
-        });
-        
-        const targetSection = document.getElementById(sectionId);
-        if (targetSection) {
-          targetSection.classList.remove('hidden');
-        }
-      },
+  document.querySelectorAll('.section').forEach(section => {
+    section.classList.add('hidden');
+  });
+  
+  const targetSection = document.getElementById(sectionId);
+  if (targetSection) {
+    targetSection.classList.remove('hidden');
+    
+    // Auto-focus first available input
+    setTimeout(() => {
+      const firstInput = targetSection.querySelector('input:not([disabled]):not([type="radio"]), select:not([disabled])');
+      if (firstInput) {
+        firstInput.focus();
+        // Scroll into view if needed
+        firstInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 150);
+  }
+},
 
       generateAutomatedQuestions() {
         const intensity = document.querySelector('input[name="intensity"]:checked').value;
@@ -4183,8 +4196,14 @@
       addQuestion(qData = null) {
         const container = document.getElementById('questions-container');
         const currentCount = container.children.length;
-        
-        if (currentCount >= gameState.requiredQuestionCount * APP_CONFIG.MAX_QUESTIONS_MULTIPLIER) {
+
+// Update question counter in heading
+const sectionHeading = document.querySelector('#question-section h3');
+if (sectionHeading && !sectionHeading.textContent.includes('Review')) {
+  sectionHeading.textContent = `Add Your Questions (${currentCount}/${gameState.requiredQuestionCount})`;
+}
+
+if (currentCount >= gameState.requiredQuestionCount * APP_CONFIG.MAX_QUESTIONS_MULTIPLIER) {
           utils.showError('question-error', `Maximum ${gameState.requiredQuestionCount * APP_CONFIG.MAX_QUESTIONS_MULTIPLIER} questions allowed`);
           return;
         }
@@ -4800,8 +4819,23 @@
           });
         }
         
+
+        // Show upgrade prompt for anonymous users after first game
+        if (userState.isAnonymous && userState.stats && userState.stats.totalGames === 1) {
+          setTimeout(() => {
+            utils.showNotification('🎉 Great first game! Sign up to save your progress and stats!', 8000);
+            setTimeout(() => {
+              if (confirm('Want to save your progress? Create a free account now!')) {
+                authManager.upgradeAccount();
+              }
+            }, 2000);
+          }, 3000);
+        }
+        
         this.cleanup();
       },
+
+      
 
       getLevelTag(percent) {
         if (percent === 100) return "💎 Perfect Harmony";
@@ -4957,77 +4991,122 @@ async function loadProfileContent() {
     
     const isAnonymous = userState.isAnonymous;
     
-    let content = `
-      <div class="profile-card">
-        <div class="profile-avatar" id="current-avatar">${userState.photoURL || '😀'}</div>
-        <h3 style="margin: 8px 0 4px 0;">${userState.displayName || userState.username || 'Player'}</h3>
-        <p style="color: var(--text-secondary); font-size: 0.9rem;">@${userState.username || 'username'}</p>
+    let content = '';
+    
+    // Check if user is anonymous first
+    if (isAnonymous) {
+      // Show upgrade-focused layout for anonymous users
+      content = `
+        <div class="upgrade-prompt" style="margin: 0;">
+          <h3>👻 Playing as Guest</h3>
+          <p>Create a free account to save your stats and unlock all features!</p>
+          <button onclick="authManager.upgradeAccount()" style="background: white; color: var(--color-accent); font-weight: 700; width: 100%; margin-bottom: 8px;">
+            💎 Upgrade to Full Account
+          </button>
+          <button onclick="authManager.signOut(); modalManager.hide('profile-modal');" style="background: #666; width: 100%;">
+            🚪 Sign Out & Start Over
+          </button>
+        </div>
         
-        ${isAnonymous ? `
-          <div class="upgrade-prompt" style="margin-top: 16px;">
-            <h3>💎 Upgrade Your Account</h3>
-            <p>Save your progress permanently and unlock all features!</p>
-            <button onclick="authManager.upgradeAccount()">
-              Upgrade Now
-            </button>
+        <div style="margin-top: 24px; padding: 20px; background: var(--bg-card); border-radius: var(--border-radius); border: 2px dashed var(--color-accent);">
+          <h4 style="margin-bottom: 12px;">⚠️ Guest Account Limitations:</h4>
+          <ul style="text-align: left; margin: 0; padding-left: 20px; line-height: 1.8;">
+            <li>Stats are temporary and may be lost</li>
+            <li>No leaderboard ranking</li>
+            <li>Can't track game history</li>
+            <li>Limited partnership features</li>
+          </ul>
+        </div>
+        
+        ${stats.totalGames > 0 ? `
+          <div style="margin-top: 24px;">
+            <h4 style="text-align: center; margin-bottom: 16px;">Current Session Stats</h4>
+            <div class="stats-grid">
+              <div class="stat-card">
+                <div class="stat-value">${stats.totalGames || 0}</div>
+                <div class="stat-label">Games</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-value">${stats.averageScore || 0}%</div>
+                <div class="stat-label">Avg Score</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-value">${stats.bestScore || 0}%</div>
+                <div class="stat-label">Best Score</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-value">${stats.currentStreak || 0}🔥</div>
+                <div class="stat-label">Streak</div>
+              </div>
+            </div>
+            <p style="text-align: center; margin-top: 16px; font-weight: 600; color: var(--color-accent);">
+              ⚡ Upgrade now to save these stats forever!
+            </p>
           </div>
-        ` : `
+        ` : ''}
+      `;
+    } else {
+      // Regular profile for full accounts
+      content = `
+        <div class="profile-card">
+          <div class="profile-avatar" id="current-avatar">${userState.photoURL || '😀'}</div>
+          <h3 style="margin: 8px 0 4px 0;">${userState.displayName || userState.username || 'Player'}</h3>
+          <p style="color: var(--text-secondary); font-size: 0.9rem;">@${userState.username || 'username'}</p>
+          
           <button onclick="showAvatarPicker()" style="margin-top: 12px; font-size: 0.9rem;">
             ✏️ Change Avatar
           </button>
-        `}
-      </div>
-      
-      <div class="profile-info">
-        <div class="profile-info-item">
-          <span class="profile-info-label">Display Name</span>
-          <span class="profile-info-value" id="display-name-value">${userState.displayName || 'Not set'}</span>
         </div>
-        ${!isAnonymous ? `
+        
+        <div class="profile-info">
+          <div class="profile-info-item">
+            <span class="profile-info-label">Display Name</span>
+            <span class="profile-info-value" id="display-name-value">${userState.displayName || 'Not set'}</span>
+          </div>
           <button onclick="showDisplayNameEditor()" style="width: 100%; margin-top: 8px; font-size: 0.9rem;">
             ✏️ Edit Display Name
           </button>
-        ` : ''}
-        
-        ${userState.currentUser && userState.currentUser.email ? `
+          
+          ${userState.currentUser && userState.currentUser.email ? `
+            <div class="profile-info-item">
+              <span class="profile-info-label">Email</span>
+              <span class="profile-info-value">${userState.currentUser.email}</span>
+            </div>
+          ` : ''}
+          
           <div class="profile-info-item">
-            <span class="profile-info-label">Email</span>
-            <span class="profile-info-value">${userState.currentUser.email}</span>
-          </div>
-        ` : ''}
-        
-        <div class="profile-info-item">
-          <span class="profile-info-label">Member Since</span>
-          <span class="profile-info-value">${formatDate(userState.stats?.lastPlayed || Date.now())}</span>
-        </div>
-      </div>
-      
-      <div style="margin-top: 24px;">
-        <h3 style="text-align: center; margin-bottom: 16px;">Quick Stats</h3>
-        <div class="stats-grid">
-          <div class="stat-card">
-            <div class="stat-value">${stats.totalGames || 0}</div>
-            <div class="stat-label">Games</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-value">${stats.averageScore || 0}%</div>
-            <div class="stat-label">Avg Score</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-value">${stats.bestScore || 0}%</div>
-            <div class="stat-label">Best Score</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-value">${stats.currentStreak || 0}🔥</div>
-            <div class="stat-label">Streak</div>
+            <span class="profile-info-label">Member Since</span>
+            <span class="profile-info-value">${formatDate(userState.stats?.lastPlayed || Date.now())}</span>
           </div>
         </div>
         
-        <button onclick="showStats()" style="width: 100%; margin-top: 16px;">
-          📊 View Full Stats & Leaderboards
-        </button>
-      </div>
-    `;
+        <div style="margin-top: 24px;">
+          <h3 style="text-align: center; margin-bottom: 16px;">Quick Stats</h3>
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-value">${stats.totalGames || 0}</div>
+              <div class="stat-label">Games</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value">${stats.averageScore || 0}%</div>
+              <div class="stat-label">Avg Score</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value">${stats.bestScore || 0}%</div>
+              <div class="stat-label">Best Score</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value">${stats.currentStreak || 0}🔥</div>
+              <div class="stat-label">Streak</div>
+            </div>
+          </div>
+          
+          <button onclick="showStats()" style="width: 100%; margin-top: 16px;">
+            📊 View Full Stats & Leaderboards
+          </button>
+        </div>
+      `;
+    }
     
     container.innerHTML = content;
     
@@ -5626,6 +5705,29 @@ function formatDate(timestamp) {
         if (userState.userId) {
           sessionManager.attemptReconnect();
         }
+
+        // Enter key support for faster gameplay
+  document.addEventListener('keypress', function(e) {
+    if (e.key !== 'Enter' || e.shiftKey) return;
+    
+    const activeElement = document.activeElement;
+    const activeSection = document.querySelector('.section:not(.hidden)');
+    
+    // Don't submit if typing in a textarea or the enter is for autocomplete
+    if (activeElement.tagName === 'TEXTAREA') return;
+    
+    if (activeSection) {
+      // Join room when Enter pressed in room code field
+      if (activeSection.id === 'auth-section' && activeElement.id === 'roomCode') {
+        const roomCode = document.getElementById('roomCode').value.trim();
+        if (roomCode) {
+          joinRoom();
+        }
+      }
+    }
+  });
+  
+  const perfEnd = performance.now();
       });
       
       const themeSwitchBtn = document.getElementById('theme-switch');
@@ -5724,22 +5826,59 @@ function formatDate(timestamp) {
       gameState.myTag = null;
       gameState.otherScore = null;
       gameState.otherTag = null;
+      gameState.reviewCompleted = false;
+      gameState.isReviewPaused = false;
+      gameState.reviewEndTime = null;
+      
+      if (gameState.reviewInterval) {
+        clearInterval(gameState.reviewInterval);
+        gameState.reviewInterval = null;
+      }
       
       gameState.currentRound++;
       
-      // Clear old room data for fresh round
-      if (window.db && gameState.roomCode) {
-        await window.db.ref(`rooms/${gameState.roomCode}/questions`).remove();
-        await window.db.ref(`rooms/${gameState.roomCode}/answers`).remove();
-        await window.db.ref(`rooms/${gameState.roomCode}/gameState`).remove();
+      try {
+        // Check if we're the room creator
+        const settingsSnapshot = await window.db.ref(`rooms/${gameState.roomCode}/settings`).once('value');
+        const settings = settingsSnapshot.val();
+        const isCreator = settings && settings.creator === gameState.playerName;
+        
+        // Clear old room data for fresh round
+        if (window.db && gameState.roomCode) {
+          await window.db.ref(`rooms/${gameState.roomCode}/questions`).remove();
+          await window.db.ref(`rooms/${gameState.roomCode}/answers`).remove();
+          await window.db.ref(`rooms/${gameState.roomCode}/gameState`).remove();
+          
+          // If we're the creator, also clear the question count requirement
+          if (isCreator) {
+            await window.db.ref(`rooms/${gameState.roomCode}/settings/requiredQuestionCount`).remove();
+            gameState.requiredQuestionCount = 5; // Reset to default
+          }
+        }
+        
+        if (userState.sessionId) {
+          await statsManager.incrementSessionRound(userState.sessionId);
+        }
+        
+        // Reset game state
+        await dbManager.updateGameState(GAME_STATES.SETUP);
+        
+        // Show appropriate screen based on role
+        if (isCreator) {
+          gameManager.showSection('question-setup-section');
+          utils.showNotification(`🔄 Round ${gameState.currentRound} - Select question count!`);
+        } else {
+          gameManager.showSection('waiting-section');
+          document.getElementById('waiting-section').innerHTML = 
+            '<div class="loading-indicator">⏳ Waiting for room creator to set up the next round...</div>';
+          gameManager.listenForRoomUpdates();
+          utils.showNotification(`🔄 Round ${gameState.currentRound} - Waiting for setup...`);
+        }
+        
+      } catch (error) {
+        console.error('Error starting new round:', error);
+        utils.showNotification('Failed to start new round. Please refresh.');
       }
-      
-      if (userState.sessionId) {
-        await statsManager.incrementSessionRound(userState.sessionId);
-      }
-      
-      gameManager.showSection('question-setup-section');
-      utils.showNotification(`🔄 Starting Round ${gameState.currentRound}!`);
     }
 
     window.showAboutName = showAboutName;
@@ -5747,6 +5886,23 @@ function formatDate(timestamp) {
     window.statsManager = statsManager;
     window.modalManager = modalManager;
     window.startNewRound = startNewRound;
+
+    function copyRoomCode() {
+  navigator.clipboard.writeText(gameState.roomCode).then(() => {
+    utils.showNotification('✅ Room code copied to clipboard!');
+  }).catch(() => {
+    // Fallback for older browsers
+    const textArea = document.createElement('textarea');
+    textArea.value = gameState.roomCode;
+    document.body.appendChild(textArea);
+    textArea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textArea);
+    utils.showNotification('✅ Room code copied!');
+  });
+}
+
+window.copyRoomCode = copyRoomCode;
 
   </script>
 </body>
