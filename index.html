@@ -38,12 +38,18 @@
       --timing-fast: 0.2s;
       --timing-medium: 0.3s;
       --timing-slow: 0.4s;
-      --shadow-light: 0 2px 8px rgba(0, 0, 0, 0.1);
-      --shadow-medium: 0 4px 16px rgba(0, 0, 0, 0.15);
-      --shadow-heavy: 0 8px 24px rgba(0, 0, 0, 0.2);
-      --border-radius: 8px;
-      --border-radius-large: 10px;
+      --timing-spring: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+      --timing-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+      --shadow-light: 0 2px 8px rgba(0, 0, 0, 0.08);
+      --shadow-medium: 0 8px 24px rgba(0, 0, 0, 0.12);
+      --shadow-heavy: 0 16px 48px rgba(0, 0, 0, 0.16);
+      --shadow-glow: 0 0 20px rgba(255, 128, 168, 0.3);
+      --border-radius: 12px;
+      --border-radius-large: 16px;
+      --border-radius-xl: 24px;
       --min-touch-target: 44px;
+      --glass-bg: rgba(255, 255, 255, 0.05);
+      --glass-border: rgba(255, 255, 255, 0.1);
     }
 
     /* Base Styles */
@@ -71,102 +77,237 @@
 
     /* Theme Styles */
     .light-theme {
-      --bg-primary: linear-gradient(120deg, #ffd6e1 0%, #c9f6f9 100%);
-      --text-primary: #232323;
+      --bg-primary: linear-gradient(135deg, #ffd6e1 0%, #ffe8f0 25%, #c9f6f9 75%, #b8e9f5 100%);
+      --text-primary: #1a1a1a;
       --text-secondary: #666;
-      --bg-card: #ffffff;
-      --bg-input: #f5f8fa;
-      --border-input: #d8e0e6;
+      --bg-card: rgba(255, 255, 255, 0.95);
+      --bg-input: #f8f9fa;
+      --border-input: #e1e4e8;
       --color-accent: #ff80a8;
       --color-accent-hover: #ff5a91;
       --color-accent-light: #ffe0ec;
-      --bg-modal: #ffffff;
+      --bg-modal: rgba(255, 255, 255, 0.98);
       --shadow-color: rgba(0, 0, 0, 0.1);
       --bg-success: #e8f5e8;
-      --text-success: #388e3c;
+      --text-success: #2e7d32;
       --border-success: #c8e6c9;
       --bg-error: #ffebee;
-      --text-error: #d32f2f;
+      --text-error: #c62828;
       --border-error: #ffcdd2;
       --bg-notification: #e3f2fd;
-      --text-notification: #1976d2;
+      --text-notification: #1565c0;
       --border-notification: #bbdefb;
+      --overlay-bg: rgba(0, 0, 0, 0.4);
     }
 
     .dark-theme {
-      --bg-primary: linear-gradient(135deg, #745100 0%, #000000 100%);
+      --bg-primary: linear-gradient(135deg, #2d1b00 0%, #1a1a1a 50%, #000000 100%);
       --text-primary: #ffffff;
-      --text-secondary: #cccccc;
-      --bg-card: #222222;
-      --bg-input: #222222;
-      --border-input: #444444;
+      --text-secondary: #b0b0b0;
+      --bg-card: rgba(40, 40, 40, 0.95);
+      --bg-input: #2a2a2a;
+      --border-input: #404040;
       --color-accent: #ffd26b;
-      --color-accent-hover: #ff567d;
-      --color-accent-light: #432200;
-      --bg-modal: #222222;
-      --shadow-color: rgba(0, 0, 0, 0.3);
-      --bg-success: #1b2d1b;
-      --text-success: #4caf50;
-      --border-success: #2f5d2f;
-      --bg-error: #2d1b1b;
-      --text-error: #f44336;
-      --border-error: #5d2f2f;
-      --bg-notification: #1a1a2e;
+      --color-accent-hover: #ffbd3d;
+      --color-accent-light: #3d2f00;
+      --bg-modal: rgba(34, 34, 34, 0.98);
+      --shadow-color: rgba(0, 0, 0, 0.5);
+      --bg-success: #1b3d1b;
+      --text-success: #66bb6a;
+      --border-success: #2e5d2e;
+      --bg-error: #3d1b1b;
+      --text-error: #ef5350;
+      --border-error: #5d2e2e;
+      --bg-notification: #1a2332;
       --text-notification: #64b5f6;
-      --border-notification: #16213e;
+      --border-notification: #1e3a5f;
+      --overlay-bg: rgba(0, 0, 0, 0.7);
     }
 
     .light-theme {
       background: var(--bg-primary);
       color: var(--text-primary);
+      position: relative;
+      min-height: 100vh;
+    }
+
+    .light-theme::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: radial-gradient(circle at 20% 80%, rgba(255, 128, 168, 0.1) 0%, transparent 50%),
+                  radial-gradient(circle at 80% 20%, rgba(201, 246, 249, 0.1) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: 0;
     }
 
     .dark-theme {
       background: var(--bg-primary);
       color: var(--text-primary);
+      position: relative;
+      min-height: 100vh;
+    }
+
+    .dark-theme::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: radial-gradient(circle at 20% 80%, rgba(255, 210, 107, 0.08) 0%, transparent 50%),
+                  radial-gradient(circle at 80% 20%, rgba(116, 81, 0, 0.1) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: 0;
     }
 
     /* Typography */
     h1 {
-      font-size: clamp(2rem, 5vw, 2.7rem);
-      font-weight: 700;
+      font-size: clamp(2.2rem, 5vw, 3rem);
+      font-weight: 800;
       color: var(--text-primary);
       margin: 0;
-      letter-spacing: 0.5px;
-      line-height: 1.15;
+      letter-spacing: -0.5px;
+      line-height: 1.1;
+      background: linear-gradient(135deg, var(--color-accent), var(--color-accent-hover));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      position: relative;
+      display: inline-block;
+    }
+
+    h1::after {
+      content: '';
+      position: absolute;
+      bottom: -8px;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, var(--color-accent), transparent);
+      border-radius: 2px;
+      opacity: 0.5;
     }
 
     h3 {
-      font-size: clamp(1.1rem, 3vw, 1.35rem);
-      font-weight: 600;
+      font-size: clamp(1.2rem, 3vw, 1.5rem);
+      font-weight: 700;
       color: var(--text-primary);
       margin: 0 0 24px 0;
+      letter-spacing: -0.3px;
+      position: relative;
+      padding-bottom: 12px;
     }
 
-    p {
-      margin: 0 0 1rem 0;
-      color: var(--text-secondary);
+    h3::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 60px;
+      height: 3px;
+      background: linear-gradient(90deg, var(--color-accent), transparent);
+      border-radius: 2px;
     }
 
     /* Form Elements */
+    button {
+      font-family: var(--font-main);
+      font-size: 1.05rem;
+      border-radius: var(--border-radius);
+      background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-hover) 100%);
+      color: #ffffff;
+      font-weight: 600;
+      border: none;
+      padding: 14px 28px;
+      margin: 8px 6px;
+      cursor: pointer;
+      transition: all var(--timing-medium) var(--timing-smooth);
+      letter-spacing: 0.3px;
+      min-height: var(--min-touch-target);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    button::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: left 0.5s;
+    }
+
+    button:hover::before {
+      left: 100%;
+    }
+
+    button:hover:not(:disabled) {
+      background: linear-gradient(135deg, var(--color-accent-hover) 0%, var(--color-accent) 100%);
+      transform: translateY(-2px) scale(1.02);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2), var(--shadow-glow);
+    }
+
+    button:active:not(:disabled) {
+      transform: translateY(0) scale(0.98);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    button:disabled {
+      background: linear-gradient(135deg, #cccccc 0%, #aaaaaa 100%);
+      color: #888888;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+      opacity: 0.6;
+    }
+
     input, select, textarea {
       font-family: var(--font-main);
-      font-size: 1.1rem;
+      font-size: 1.05rem;
       border-radius: var(--border-radius);
-      border: 1.5px solid var(--border-input);
+      border: 2px solid var(--border-input);
       background: var(--bg-input);
       color: var(--text-primary);
       outline: none;
-      transition: all var(--timing-medium);
+      transition: all var(--timing-medium) var(--timing-smooth);
       min-height: var(--min-touch-target);
-      padding: 8px 12px;
+      padding: 12px 16px;
       width: 100%;
       max-width: 400px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+      position: relative;
+    }
+
+    input::placeholder,
+    select::placeholder,
+    textarea::placeholder {
+      color: var(--text-secondary);
+      opacity: 0.6;
+    }
+
+    input:hover, select:hover, textarea:hover {
+      border-color: color-mix(in srgb, var(--color-accent) 50%, var(--border-input));
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
     }
 
     input:focus, select:focus, textarea:focus {
       border-color: var(--color-accent);
-      box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 20%, transparent);
+      background: var(--bg-card);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1), 
+                  0 0 0 4px color-mix(in srgb, var(--color-accent) 15%, transparent);
+      transform: translateY(-1px);
     }
 
     /* Buttons */
@@ -212,19 +353,38 @@
     .question-block {
       background: var(--bg-card);
       color: var(--text-primary);
-      box-shadow: var(--shadow-light);
+      box-shadow: var(--shadow-medium);
       border-radius: var(--border-radius-large);
-      padding: 20px;
+      padding: 24px;
       margin: 20px auto;
       max-width: 500px;
       text-align: left;
       position: relative;
-      transition: all var(--timing-medium);
+      transition: all var(--timing-medium) var(--timing-smooth);
+      border: 1px solid color-mix(in srgb, var(--color-accent) 10%, transparent);
+      backdrop-filter: blur(10px);
+    }
+
+    .question-block::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--color-accent), var(--color-accent-hover));
+      border-radius: var(--border-radius-large) var(--border-radius-large) 0 0;
+      opacity: 0;
+      transition: opacity var(--timing-medium);
+    }
+
+    .question-block:hover::before {
+      opacity: 1;
     }
 
     .question-block:hover {
-      transform: translateY(-2px);
-      box-shadow: var(--shadow-medium);
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-heavy), 0 0 0 1px color-mix(in srgb, var(--color-accent) 20%, transparent);
     }
 
     .main-question-input {
@@ -247,10 +407,23 @@
 
     /* Layout Components */
     .section {
-      animation: fadeIn 0.6s ease;
+      animation: sectionFadeIn 0.8s var(--timing-smooth);
       padding: 20px;
       max-width: 800px;
       margin: 0 auto;
+      position: relative;
+      z-index: 1;
+    }
+
+    @keyframes sectionFadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     .container {
@@ -260,6 +433,8 @@
       justify-content: center;
       align-items: center;
       padding: 20px;
+      position: relative;
+      z-index: 1;
     }
 
     /* Theme Switch */
@@ -267,23 +442,34 @@
       position: fixed;
       top: 20px;
       right: 20px;
-      background: var(--color-accent-light);
+      background: var(--bg-card);
       color: var(--color-accent);
       font-size: 1.5rem;
       border-radius: 50%;
-      border: none;
+      border: 2px solid color-mix(in srgb, var(--color-accent) 20%, transparent);
       padding: 12px;
       cursor: pointer;
-      transition: all var(--timing-fast);
+      transition: all var(--timing-medium) var(--timing-smooth);
       z-index: 1000;
       min-height: var(--min-touch-target);
       min-width: var(--min-touch-target);
+      box-shadow: var(--shadow-medium);
+      backdrop-filter: blur(10px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .theme-switch:hover {
       background: var(--color-accent);
       color: #ffffff;
-      transform: scale(1.1);
+      transform: scale(1.15) rotate(20deg);
+      box-shadow: var(--shadow-heavy), var(--shadow-glow);
+      border-color: var(--color-accent);
+    }
+
+    .theme-switch:active {
+      transform: scale(1.05) rotate(20deg);
     }
 
     /* Utility Classes */
@@ -304,44 +490,158 @@
     .error-message {
       color: var(--text-error);
       background: var(--bg-error);
-      border: 1px solid var(--border-error);
-      padding: 12px 16px;
-      border-radius: var(--border-radius);
-      margin: 8px 0;
-      font-size: 0.9rem;
+      border: 2px solid var(--border-error);
+      padding: 14px 20px;
+      border-radius: var(--border-radius-large);
+      margin: 12px 0;
+      font-size: 0.95rem;
+      font-weight: 600;
+      box-shadow: var(--shadow-light);
+      animation: messageSlideIn 0.4s var(--timing-smooth);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .error-message::before {
+      content: '⚠️';
+      margin-right: 8px;
+      font-size: 1.1rem;
     }
 
     .success-message {
       color: var(--text-success);
       background: var(--bg-success);
-      border: 1px solid var(--border-success);
-      padding: 12px 16px;
-      border-radius: var(--border-radius);
-      margin: 8px 0;
-      font-size: 0.9rem;
+      border: 2px solid var(--border-success);
+      padding: 14px 20px;
+      border-radius: var(--border-radius-large);
+      margin: 12px 0;
+      font-size: 0.95rem;
+      font-weight: 600;
+      box-shadow: var(--shadow-light);
+      animation: messageSlideIn 0.4s var(--timing-smooth);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .success-message::before {
+      content: '✅';
+      margin-right: 8px;
+      font-size: 1.1rem;
+    }
+
+    @keyframes messageSlideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     .notification {
       background: var(--bg-notification);
       color: var(--text-notification);
       border: 2px solid var(--border-notification);
-      padding: 16px 20px;
-      border-radius: var(--border-radius);
+      padding: 18px 24px;
+      border-radius: var(--border-radius-large);
       margin: 10px auto;
       max-width: 500px;
-      animation: slideIn 0.5s ease;
-      box-shadow: var(--shadow-medium);
+      animation: notificationSlideIn 0.5s var(--timing-spring);
+      box-shadow: var(--shadow-heavy);
+      backdrop-filter: blur(10px);
+      position: relative;
+      overflow: hidden;
+      font-weight: 500;
+    }
+
+    .notification::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 4px;
+      background: linear-gradient(180deg, var(--color-accent), var(--color-accent-hover));
+    }
+
+    .notification::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+      animation: notificationShimmer 2s infinite;
+    }
+
+    @keyframes notificationSlideIn {
+      from { 
+        transform: translateX(-120%) scale(0.8);
+        opacity: 0;
+      }
+      to { 
+        transform: translateX(0) scale(1);
+        opacity: 1;
+      }
+    }
+
+    @keyframes notificationShimmer {
+      to {
+        left: 100%;
+      }
     }
 
     .room-info {
-      background: color-mix(in srgb, var(--color-accent) 10%, transparent);
-      color: var(--color-accent);
-      border: 2px solid var(--color-accent);
-      padding: 16px 20px;
-      border-radius: var(--border-radius);
-      margin: 10px auto;
-      max-width: 500px;
+      background: linear-gradient(135deg, 
+        color-mix(in srgb, var(--color-accent) 15%, transparent),
+        color-mix(in srgb, var(--color-accent) 5%, transparent));
+      color: var(--text-primary);
+      border: 2px solid color-mix(in srgb, var(--color-accent) 30%, transparent);
+      padding: 20px 28px;
+      border-radius: var(--border-radius-large);
+      margin: 16px auto;
+      max-width: 600px;
       font-weight: 600;
+      box-shadow: var(--shadow-medium);
+      position: relative;
+      overflow: hidden;
+      backdrop-filter: blur(10px);
+    }
+
+    .room-info::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--color-accent), var(--color-accent-hover));
+    }
+
+    .room-info::after {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+      animation: roomInfoGlow 3s infinite;
+      pointer-events: none;
+    }
+
+    @keyframes roomInfoGlow {
+      0%, 100% {
+        transform: translate(-25%, -25%);
+        opacity: 0.5;
+      }
+      50% {
+        transform: translate(0%, 0%);
+        opacity: 0.8;
+      }
     }
 
     .loading-indicator {
@@ -362,7 +662,7 @@
     }
 
     /* Modal Styles */
-    .modal {
+.modal {
       display: none;
       position: fixed;
       z-index: 2000;
@@ -370,23 +670,59 @@
       top: 0;
       width: 100%;
       height: 100%;
-      background-color: rgba(0, 0, 0, 0.6);
-      backdrop-filter: blur(4px);
+      background-color: var(--overlay-bg);
+      backdrop-filter: blur(12px);
+      animation: modalFadeIn 0.3s var(--timing-smooth);
+    }
+
+    @keyframes modalFadeIn {
+      from {
+        opacity: 0;
+        backdrop-filter: blur(0px);
+      }
+      to {
+        opacity: 1;
+        backdrop-filter: blur(12px);
+      }
     }
 
     .modal-content {
       background: var(--bg-modal);
       color: var(--text-primary);
       margin: 5% auto;
-      padding: 30px;
-      border-radius: var(--border-radius-large);
+      padding: 36px;
+      border-radius: var(--border-radius-xl);
       width: 90%;
       max-width: 600px;
       max-height: 80vh;
       overflow-y: auto;
       position: relative;
-      animation: fadeInUp 0.3s ease;
+      animation: modalSlideUp 0.4s var(--timing-spring);
       box-shadow: var(--shadow-heavy);
+      border: 1px solid color-mix(in srgb, var(--color-accent) 15%, transparent);
+      backdrop-filter: blur(20px);
+    }
+
+    @keyframes modalSlideUp {
+      from {
+        opacity: 0;
+        transform: translateY(40px) scale(0.95);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    .modal-content::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--color-accent), var(--color-accent-hover));
+      border-radius: var(--border-radius-xl) var(--border-radius-xl) 0 0;
     }
 
     .close {
@@ -464,21 +800,34 @@
 .progress-container {
   width: 100%;
   max-width: 500px;
-  margin: 20px auto;
+  margin: 24px auto;
   background: var(--bg-input);
   border-radius: 20px;
   overflow: hidden;
-  height: 12px;
+  height: 14px;
   position: relative;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+  border: 1px solid color-mix(in srgb, var(--color-accent) 10%, transparent);
 }
 
 .progress-bar {
   height: 100%;
   background: linear-gradient(90deg, var(--color-accent), var(--color-accent-hover));
   border-radius: 20px;
-  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: width 0.6s var(--timing-smooth);
   position: relative;
   overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.progress-bar::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.3), transparent);
 }
 
 .progress-bar::after {
@@ -488,7 +837,7 @@
   left: 0;
   bottom: 0;
   right: 0;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
   animation: shimmer 2s infinite;
 }
 
@@ -550,20 +899,54 @@
 /* Achievement Badge */
 .achievement-badge {
   display: inline-block;
-  padding: 12px 20px;
+  padding: 20px 32px;
   margin: 10px;
   background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-hover) 100%);
   color: white;
-  border-radius: 30px;
-  font-weight: 600;
-  font-size: 1.1rem;
-  box-shadow: var(--shadow-medium);
-  animation: badgeAppear 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  border-radius: 50px;
+  font-weight: 700;
+  font-size: 1.2rem;
+  box-shadow: var(--shadow-heavy), 0 0 40px rgba(255, 128, 168, 0.4);
+  animation: badgeAppear 0.8s var(--timing-spring);
+  position: relative;
+  overflow: hidden;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+}
+
+.achievement-badge::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
+  animation: badgeGlow 2s infinite;
+}
+
+@keyframes badgeGlow {
+  0%, 100% {
+    transform: translate(-25%, -25%);
+    opacity: 0.5;
+  }
+  50% {
+    transform: translate(0%, 0%);
+    opacity: 1;
+  }
 }
 
 @keyframes badgeAppear {
-  0% { transform: scale(0) rotate(-180deg); opacity: 0; }
-  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+  0% { 
+    transform: scale(0) rotate(-180deg); 
+    opacity: 0; 
+  }
+  50% {
+    transform: scale(1.2) rotate(10deg);
+  }
+  100% { 
+    transform: scale(1) rotate(0deg); 
+    opacity: 1; 
+  }
 }
 
 /* Question Card Animation */
@@ -743,6 +1126,35 @@
       text-align: left;
     }
 
+    /* Auth Prompt Card */
+.auth-prompt-card {
+  background: var(--bg-card);
+  border-radius: var(--border-radius-large);
+  padding: 32px;
+  margin: 20px auto;
+  max-width: 500px;
+  box-shadow: var(--shadow-heavy);
+  text-align: center;
+  border: 2px solid color-mix(in srgb, var(--color-accent) 20%, transparent);
+  position: relative;
+  overflow: hidden;
+}
+
+.auth-prompt-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--color-accent), var(--color-accent-hover));
+}
+
+.auth-prompt-card h3 {
+  margin-bottom: 12px;
+  color: var(--color-accent);
+}
+
     .intensity-selector label {
       display: block;
       margin: 10px 0;
@@ -796,12 +1208,583 @@
       0% { background-position: 200% 0; }
       100% { background-position: -200% 0; }
     }
+
+    /* ========================================
+   AUTH & PROFILE STYLES
+   ======================================== */
+
+/* Avatar Picker */
+.avatar-picker {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+  gap: 8px;
+  padding: 16px;
+  background: var(--bg-input);
+  border-radius: var(--border-radius);
+  max-height: 200px;
+  overflow-y: auto;
+  margin: 16px 0;
+}
+
+.avatar-option {
+  font-size: 2rem;
+  padding: 8px;
+  cursor: pointer;
+  border-radius: var(--border-radius);
+  border: 2px solid transparent;
+  transition: all var(--timing-fast);
+  text-align: center;
+}
+
+.avatar-option:hover {
+  background: color-mix(in srgb, var(--color-accent) 10%, transparent);
+  transform: scale(1.1);
+}
+
+.avatar-option.selected {
+  border-color: var(--color-accent);
+  background: color-mix(in srgb, var(--color-accent) 20%, transparent);
+}
+
+/* Profile Card */
+.profile-card {
+  background: var(--bg-card);
+  border-radius: var(--border-radius-xl);
+  padding: 32px;
+  text-align: center;
+  box-shadow: var(--shadow-heavy);
+  margin-bottom: 24px;
+  border: 1px solid color-mix(in srgb, var(--color-accent) 15%, transparent);
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+}
+
+.profile-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background: linear-gradient(90deg, var(--color-accent), var(--color-accent-hover));
+}
+
+.profile-card::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.03) 0%, transparent 70%);
+  animation: profileGlow 4s infinite;
+  pointer-events: none;
+}
+
+@keyframes profileGlow {
+  0%, 100% {
+    transform: translate(-25%, -25%) rotate(0deg);
+  }
+  50% {
+    transform: translate(0%, 0%) rotate(180deg);
+  }
+}
+
+.profile-avatar {
+  font-size: 5rem;
+  width: 120px;
+  height: 120px;
+  margin: 0 auto 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, 
+    color-mix(in srgb, var(--color-accent) 20%, transparent),
+    color-mix(in srgb, var(--color-accent) 10%, transparent));
+  border-radius: 50%;
+  border: 4px solid var(--color-accent);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2), 
+              inset 0 2px 8px rgba(255, 255, 255, 0.1);
+  transition: all var(--timing-medium) var(--timing-smooth);
+  position: relative;
+  z-index: 1;
+}
+
+.profile-avatar:hover {
+  transform: scale(1.1) rotate(5deg);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3), 
+              inset 0 2px 8px rgba(255, 255, 255, 0.1),
+              0 0 30px color-mix(in srgb, var(--color-accent) 40%, transparent);
+}
+
+.profile-info {
+  margin-top: 16px;
+}
+
+.profile-info-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  margin: 8px 0;
+  background: var(--bg-input);
+  border-radius: var(--border-radius);
+}
+
+.profile-info-label {
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.profile-info-value {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+/* Stats Display */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 16px;
+  margin: 20px 0;
+}
+
+.stat-card {
+  background: var(--bg-card);
+  padding: 24px;
+  border-radius: var(--border-radius-large);
+  text-align: center;
+  box-shadow: var(--shadow-medium);
+  transition: all var(--timing-medium) var(--timing-smooth);
+  border: 1px solid color-mix(in srgb, var(--color-accent) 10%, transparent);
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--color-accent), var(--color-accent-hover));
+  transform: scaleX(0);
+  transition: transform var(--timing-medium) var(--timing-smooth);
+}
+
+.stat-card:hover::before {
+  transform: scaleX(1);
+}
+
+.stat-card:hover {
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: var(--shadow-heavy), 0 0 20px color-mix(in srgb, var(--color-accent) 20%, transparent);
+  border-color: color-mix(in srgb, var(--color-accent) 30%, transparent);
+}
+
+.stat-value {
+  font-size: 2.5rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--color-accent), var(--color-accent-hover));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 8px;
+  line-height: 1;
+}
+
+.stat-label {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 600;
+}
+
+/* Stats Tabs */
+.stats-tab {
+  background: transparent;
+  border: 2px solid var(--border-input);
+  color: var(--text-secondary);
+}
+
+.stats-tab:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+  background: color-mix(in srgb, var(--color-accent) 10%, transparent);
+}
+
+.stats-tab.active {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: #ffffff;
+}
+
+/* Leaderboard Table */
+.leaderboard-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin-top: 20px;
+  border-radius: var(--border-radius-large);
+  overflow: hidden;
+  box-shadow: var(--shadow-medium);
+}
+
+.leaderboard-table th,
+.leaderboard-table td {
+  padding: 16px;
+  text-align: left;
+  border-bottom: 1px solid color-mix(in srgb, var(--border-input) 50%, transparent);
+}
+
+.leaderboard-table th {
+  background: linear-gradient(135deg, 
+    color-mix(in srgb, var(--color-accent) 15%, var(--bg-input)),
+    var(--bg-input));
+  font-weight: 700;
+  color: var(--text-primary);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 0.85rem;
+  border-bottom: 2px solid var(--color-accent);
+}
+
+.leaderboard-table tbody tr {
+  background: var(--bg-card);
+  transition: all var(--timing-medium) var(--timing-smooth);
+}
+
+.leaderboard-table tbody tr:hover {
+  background: color-mix(in srgb, var(--color-accent) 8%, var(--bg-card));
+  transform: translateX(4px);
+  box-shadow: inset 4px 0 0 var(--color-accent);
+}
+
+.leaderboard-rank {
+  font-weight: 800;
+  color: var(--color-accent);
+  font-size: 1.2rem;
+  min-width: 50px;
+  display: inline-block;
+}
+
+.leaderboard-rank.top-3 {
+  font-size: 1.5rem;
+  background: linear-gradient(135deg, var(--color-accent), var(--color-accent-hover));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.leaderboard-me {
+  background: linear-gradient(90deg,
+    color-mix(in srgb, var(--color-accent) 20%, var(--bg-card)) 0%,
+    color-mix(in srgb, var(--color-accent) 10%, var(--bg-card)) 100%) !important;
+  border-left: 5px solid var(--color-accent);
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.leaderboard-me:hover {
+  box-shadow: inset 5px 0 0 var(--color-accent), 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Partnership Card */
+.partner-card {
+  background: var(--bg-card);
+  border-radius: var(--border-radius-large);
+  padding: 20px;
+  margin-bottom: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: var(--shadow-medium);
+  transition: all var(--timing-medium) var(--timing-smooth);
+  cursor: pointer;
+  border: 1px solid color-mix(in srgb, var(--color-accent) 10%, transparent);
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+}
+
+.partner-card::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: linear-gradient(180deg, var(--color-accent), var(--color-accent-hover));
+  transform: scaleY(0);
+  transition: transform var(--timing-medium) var(--timing-smooth);
+}
+
+.partner-card:hover::before {
+  transform: scaleY(1);
+}
+
+.partner-card:hover {
+  transform: translateX(8px);
+  box-shadow: var(--shadow-heavy), 0 0 20px color-mix(in srgb, var(--color-accent) 15%, transparent);
+  border-color: color-mix(in srgb, var(--color-accent) 25%, transparent);
+}
+
+.partner-card:active {
+  transform: translateX(4px) scale(0.98);
+}
+
+.partner-badge {
+  background: linear-gradient(135deg, var(--color-accent), var(--color-accent-hover));
+  color: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  white-space: nowrap;
+}
+
+/* Game History Timeline */
+.history-timeline {
+  position: relative;
+  padding-left: 24px;
+  margin-top: 20px;
+}
+
+.history-timeline::before {
+  content: '';
+  position: absolute;
+  left: 8px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--border-input);
+}
+
+.history-item {
+  position: relative;
+  padding: 16px;
+  margin-bottom: 16px;
+  background: var(--bg-card);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-light);
+  margin-left: 16px;
+}
+
+.history-item::before {
+  content: '';
+  position: absolute;
+  left: -24px;
+  top: 20px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  border: 2px solid var(--bg-modal);
+}
+
+.history-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.history-opponent {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.history-date {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.history-scores {
+  display: flex;
+  gap: 16px;
+  font-size: 0.95rem;
+}
+
+.history-score {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.history-score.win {
+  color: var(--text-success);
+  font-weight: 600;
+}
+
+.history-score.loss {
+  color: var(--text-error);
+}
+
+/* Upgrade Prompt */
+.upgrade-prompt {
+  background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-hover) 100%);
+  color: white;
+  padding: 24px;
+  border-radius: var(--border-radius-large);
+  text-align: center;
+  margin: 20px 0;
+  box-shadow: var(--shadow-heavy);
+  animation: pulseGlow 2s infinite;
+}
+
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 20px rgba(255, 128, 168, 0.3); }
+  50% { box-shadow: 0 0 40px rgba(255, 128, 168, 0.6); }
+}
+
+.upgrade-prompt h3 {
+  margin: 0 0 12px 0;
+  font-size: 1.5rem;
+}
+
+.upgrade-prompt p {
+  margin: 0 0 16px 0;
+  opacity: 0.95;
+}
+
+.upgrade-prompt button {
+  background: white;
+  color: var(--color-accent);
+  font-weight: 700;
+  padding: 12px 32px;
+  font-size: 1.1rem;
+}
+
+.upgrade-prompt button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-secondary);
+  background: var(--bg-card);
+  border-radius: var(--border-radius-xl);
+  margin: 20px auto;
+  max-width: 500px;
+  box-shadow: var(--shadow-light);
+  border: 2px dashed color-mix(in srgb, var(--color-accent) 20%, transparent);
+}
+
+.empty-state-icon {
+  font-size: 5rem;
+  margin-bottom: 20px;
+  opacity: 0.6;
+  animation: emptyStateBounce 2s infinite;
+  display: inline-block;
+}
+
+@keyframes emptyStateBounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.empty-state-text {
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: var(--text-primary);
+}
+
+.empty-state-subtext {
+  font-size: 1rem;
+  opacity: 0.8;
+  line-height: 1.6;
+}
+
+/* Badge Animations */
+@keyframes badgeAppear {
+  0% { 
+    transform: translate(-50%, -50%) scale(0) rotate(-180deg); 
+    opacity: 0; 
+  }
+  100% { 
+    transform: translate(-50%, -50%) scale(1) rotate(0deg); 
+    opacity: 1; 
+  }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+/* Responsive Stats */
+@media (max-width: 768px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .leaderboard-table {
+    font-size: 0.9rem;
+  }
+  
+  .leaderboard-table th,
+  .leaderboard-table td {
+    padding: 8px 4px;
+  }
+  
+  .partner-card {
+    flex-direction: column;
+    text-align: center;
+    gap: 12px;
+  }
+  
+  .history-timeline {
+    padding-left: 16px;
+  }
+  
+  .history-item {
+    margin-left: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .avatar-picker {
+    grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+  }
+  
+  .profile-avatar {
+    font-size: 3rem;
+    width: 80px;
+    height: 80px;
+  }
+}
+
   </style>
   
   <!-- Firebase SDK -->
+  <!-- BEFORE (existing code around line 645): -->
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
   
+<!-- ADD HERE: -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+
+<!-- AFTER (existing): -->
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyAvaDuz1OCKYuDfieZiHynhYkur9KOPY00",
@@ -817,6 +1800,7 @@
     try {
       firebase.initializeApp(firebaseConfig);
       window.db = firebase.database();
+      window.auth = firebase.auth();
     } catch (error) {
       console.error('Firebase initialization failed:', error);
       window.db = null;
@@ -846,6 +1830,12 @@
                 aria-describedby="about-description">
           ℹ️
         </button>
+
+        <button id="profile-btn" class="about-name-btn hidden" 
+                title="Your Profile & Stats">
+          👤
+        </button>
+
       </div>
       <p style="font-size: 1.3rem; margin: 0; font-weight: 600; opacity: 0.9;">Challenge for Friends</p>
       <p id="about-description" class="sr-only">Click to learn about the story behind the name DALORF</p>
@@ -856,7 +1846,7 @@
     </section>
 
     <section id="auth-section" class="section" aria-labelledby="auth-heading">
-      <h3 id="auth-heading">Join or Create Game</h3>
+      <h3 id="auth-heading">Welcome to DALORF</h3>
       <p>Test how well you know each other! Create questions and see if your friend can answer them correctly.</p>
       
       <button onclick="showInstructions()" style="margin-bottom: 20px;" aria-describedby="instructions-help">
@@ -864,38 +1854,68 @@
       </button>
       <p id="instructions-help" class="sr-only">Opens detailed game instructions</p>
       
-      <div style="max-width: 400px; margin: 0 auto;">
-        <div style="margin-bottom: 16px;">
-          <label for="playerName" class="sr-only">Your Name</label>
-          <input id="playerName" 
-                 placeholder="Your Name" 
-                 aria-label="Enter your name"
-                 aria-required="true"
-                 autocomplete="name"
-                 maxlength="50">
+      <!-- Auth Prompt (shown when not authenticated) -->
+      <div id="auth-required-prompt" class="auth-prompt-card">
+        <h3>🔐 Sign In to Play</h3>
+        <p style="margin-bottom: 20px;">Create an account or sign in to start playing DALORF with your friends!</p>
+        
+        <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-bottom: 16px;">
+          <button onclick="authManager.showAuthModal('signup')" style="flex: 1; min-width: 200px;">
+            ✨ Create Account
+          </button>
+          <button onclick="authManager.showAuthModal('login')" style="flex: 1; min-width: 200px; background: #10B981;">
+            🔑 Sign In
+          </button>
         </div>
         
-        <div id="auth-error" class="error-message hidden" role="alert"></div>
+        <button onclick="authManager.signInWithGoogle()" style="width: 100%; background: #4285f4; margin-bottom: 12px;">
+          🔐 Continue with Google
+        </button>
         
-        <div style="margin-bottom: 16px;">
-          <label for="roomCode" class="sr-only">Room Code (optional)</label>
-          <input id="roomCode" 
-                 placeholder="Room Code (optional - leave empty for auto)" 
-                 aria-label="Room code - leave empty to auto-generate"
-                 autocomplete="off"
-                 style="text-transform: uppercase;"
-                 maxlength="10">
+        <button onclick="authManager.signInAnonymously()" style="width: 100%; background: #666;">
+          👻 Continue as Guest
+        </button>
+        
+        <p style="margin-top: 16px; font-size: 0.85rem; opacity: 0.7;">
+          Guest accounts have limited features. Create a full account to save your progress!
+        </p>
+      </div>
+      
+      <!-- Room Creation/Joining (shown when authenticated) -->
+      <div id="room-controls" class="hidden">
+        <div style="max-width: 400px; margin: 0 auto;">
+          <div style="margin-bottom: 16px;">
+            <label for="playerName" class="sr-only">Your Name</label>
+            <input id="playerName" 
+                   placeholder="Your Name" 
+                   aria-label="Enter your name"
+                   aria-required="true"
+                   autocomplete="name"
+                   maxlength="50">
+          </div>
+          
+          <div id="auth-error" class="error-message hidden" role="alert"></div>
+          
+          <div style="margin-bottom: 16px;">
+            <label for="roomCode" class="sr-only">Room Code (optional)</label>
+            <input id="roomCode" 
+                   placeholder="Room Code (optional - leave empty for auto)" 
+                   aria-label="Room code - leave empty to auto-generate"
+                   autocomplete="off"
+                   style="text-transform: uppercase;"
+                   maxlength="10">
+          </div>
+          
+          <div id="room-error" class="error-message hidden" role="alert"></div>
+          
+          <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+            <button onclick="createRoom()" aria-describedby="create-help">Create Room</button>
+            <button onclick="joinRoom()" aria-describedby="join-help">Join Room</button>
+          </div>
+          
+          <p id="create-help" class="sr-only">Creates a new game room and generates a room code</p>
+          <p id="join-help" class="sr-only">Joins an existing game room using the room code</p>
         </div>
-        
-        <div id="room-error" class="error-message hidden" role="alert"></div>
-        
-        <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
-          <button onclick="createRoom()" aria-describedby="create-help">Create Room</button>
-          <button onclick="joinRoom()" aria-describedby="join-help">Join Room</button>
-        </div>
-        
-        <p id="create-help" class="sr-only">Creates a new game room and generates a room code</p>
-        <p id="join-help" class="sr-only">Joins an existing game room using the room code</p>
       </div>
     </section>
 
@@ -1042,6 +2062,80 @@
     </div>
   </div>
 
+    <!-- BEFORE (existing code around line 600): -->
+        </div>
+      </div>
+
+    <!-- ADD HERE: -->
+      <!-- Auth Modal -->
+      <!-- Auth Modal -->
+<div id="auth-modal" class="modal" role="dialog" aria-labelledby="auth-modal-title" aria-hidden="true">
+  <div class="modal-content">
+    <!-- Content will be dynamically generated by authManager.showAuthModal() -->
+    <!-- This is just a placeholder that gets replaced -->
+    <button class="close" onclick="modalManager.hide('auth-modal')" aria-label="Close authentication dialog">&times;</button>
+    <div id="auth-modal-body" style="text-align: center; padding: 20px;">
+      <h2>Loading...</h2>
+    </div>
+  </div>
+</div>
+        <!-- Auth UI content -->
+      </div>
+
+     <!-- Profile Modal -->
+<div id="profile-modal" class="modal" role="dialog" aria-labelledby="profile-modal-title" aria-hidden="true">
+  <div class="modal-content">
+    <button class="close" onclick="modalManager.hide('profile-modal')" aria-label="Close profile dialog">&times;</button>
+    
+    <h2 id="profile-modal-title" style="text-align: center; margin-bottom: 24px;">
+      👤 Your Profile
+    </h2>
+    
+    <div id="profile-content" style="max-width: 500px; margin: 0 auto;">
+      <!-- Profile will be loaded here dynamically -->
+      <div class="loading-indicator">Loading profile...</div>
+    </div>
+    
+    <div style="text-align: center; margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--border-input);">
+      <button onclick="authManager.signOut()" style="background: #ef5350;">
+        🚪 Sign Out
+      </button>
+    </div>
+  </div>
+</div>
+
+   <!-- Stats/Leaderboard Modal -->
+<div id="stats-modal" class="modal" role="dialog" aria-labelledby="stats-modal-title" aria-hidden="true">
+  <div class="modal-content" style="max-width: 800px;">
+    <button class="close" onclick="modalManager.hide('stats-modal')" aria-label="Close stats dialog">&times;</button>
+    
+    <h2 id="stats-modal-title" style="text-align: center; margin-bottom: 24px;">
+      📊 Stats & Leaderboards
+    </h2>
+    
+    <!-- Tab Navigation -->
+    <div style="display: flex; justify-content: center; gap: 8px; margin-bottom: 24px; flex-wrap: wrap;">
+      <button id="stats-tab-personal" class="stats-tab active" onclick="showStatsTab('personal')" style="font-size: 0.95rem; padding: 8px 16px;">
+        📈 My Stats
+      </button>
+      <button id="stats-tab-partners" class="stats-tab" onclick="showStatsTab('partners')" style="font-size: 0.95rem; padding: 8px 16px;">
+        🤝 Game Partners
+      </button>
+      <button id="stats-tab-global" class="stats-tab" onclick="showStatsTab('global')" style="font-size: 0.95rem; padding: 8px 16px;">
+        🌍 Global Leaders
+      </button>
+      <button id="stats-tab-history" class="stats-tab" onclick="showStatsTab('history')" style="font-size: 0.95rem; padding: 8px 16px;">
+        📜 History
+      </button>
+    </div>
+    
+    <!-- Tab Content -->
+    <div id="stats-tab-content" style="min-height: 300px;">
+      <div class="loading-indicator">Loading stats...</div>
+    </div>
+  </div>
+</div>
+
   <script>
     'use strict';
 
@@ -1066,6 +2160,17 @@
       BOTH_QUESTIONS_READY: 'both_questions_ready',
       ANSWERING: 'answering',
       COMPLETED: 'completed'
+    };
+
+    const userState = {
+      currentUser: null,
+      userId: null,
+      username: null,
+      displayName: null,
+      photoURL: null,
+      isAnonymous: false,
+      stats: null,
+      sessionId: null
     };
 
     // Session Manager
@@ -1305,6 +2410,595 @@
       }
     };
 
+    const authManager = {
+  googleProvider: null,
+  
+  async init() {
+    if (!window.auth) {
+      console.error('Firebase Auth not initialized');
+      return;
+    }
+
+    // Initialize Google provider
+    this.googleProvider = new firebase.auth.GoogleAuthProvider();
+    
+    // Listen for auth state changes
+    window.auth.onAuthStateChanged(async (user) => {
+      if (user) {
+        await this.handleAuthUser(user);
+      } else {
+        this.handleNoUser();
+      }
+    });
+  },
+
+  async handleAuthUser(user) {
+    userState.currentUser = user;
+    userState.userId = user.uid;
+    userState.isAnonymous = user.isAnonymous;
+    
+    // Load or create user profile
+    const profileSnapshot = await window.db.ref(`users/${user.uid}/profile`).once('value');
+    
+    if (!profileSnapshot.exists()) {
+      // New user - create profile
+      await this.createUserProfile(user);
+    } else {
+      // Existing user - load profile
+      const profile = profileSnapshot.val();
+      userState.username = profile.username;
+      userState.displayName = profile.displayName;
+      userState.photoURL = profile.photoURL;
+    }
+    
+    // Load user stats
+    await this.loadUserStats();
+    
+    // Show profile button
+    document.getElementById('profile-btn').classList.remove('hidden');
+    
+    // IMPORTANT: Show room controls and hide auth prompt
+    this.showRoomControls();
+    
+    // Update UI with user info
+    this.updateAuthUI();
+  },
+
+  handleNoUser() {
+    // Reset user state
+    Object.assign(userState, {
+      currentUser: null,
+      userId: null,
+      username: null,
+      displayName: null,
+      photoURL: null,
+      isAnonymous: false,
+      stats: null
+    });
+    
+    // Hide profile button
+    document.getElementById('profile-btn').classList.add('hidden');
+    
+    // IMPORTANT: Hide room controls and show auth prompt
+    this.hideRoomControls();
+  },
+
+  showRoomControls() {
+    const authPrompt = document.getElementById('auth-required-prompt');
+    const roomControls = document.getElementById('room-controls');
+    
+    if (authPrompt) authPrompt.classList.add('hidden');
+    if (roomControls) roomControls.classList.remove('hidden');
+    
+    // Pre-fill name if available
+    const playerNameInput = document.getElementById('playerName');
+    if (playerNameInput && userState.displayName) {
+      playerNameInput.value = userState.displayName;
+    }
+  },
+
+  hideRoomControls() {
+    const authPrompt = document.getElementById('auth-required-prompt');
+    const roomControls = document.getElementById('room-controls');
+    
+    if (authPrompt) authPrompt.classList.remove('hidden');
+    if (roomControls) roomControls.classList.add('hidden');
+  },
+
+  handleNoUser() {
+    // Reset user state
+    Object.assign(userState, {
+      currentUser: null,
+      userId: null,
+      username: null,
+      displayName: null,
+      photoURL: null,
+      isAnonymous: false,
+      stats: null
+    });
+    
+    // Hide profile button
+    document.getElementById('profile-btn').classList.add('hidden');
+    
+    // Show auth options
+    this.showAuthPrompt();
+  },
+
+  async createUserProfile(user) {
+    const timestamp = Date.now();
+    
+    // Generate username from email or random
+    let username;
+    if (user.email) {
+      username = user.email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '');
+    } else {
+      username = `player_${Math.random().toString(36).substring(2, 8)}`;
+    }
+    
+    // Ensure username is unique
+    username = await this.ensureUniqueUsername(username);
+    
+    const profile = {
+      username: username,
+      displayName: user.displayName || username,
+      email: user.email || null,
+      photoURL: user.photoURL || this.getRandomAvatar(),
+      createdAt: timestamp,
+      isAnonymous: user.isAnonymous
+    };
+    
+    // Initialize stats
+    const stats = {
+      totalGames: 0,
+      totalWins: 0,
+      averageScore: 0,
+      bestScore: 0,
+      currentStreak: 0,
+      longestStreak: 0,
+      lastPlayed: null
+    };
+    
+    await Promise.all([
+      window.db.ref(`users/${user.uid}/profile`).set(profile),
+      window.db.ref(`users/${user.uid}/stats`).set(stats)
+    ]);
+    
+    userState.username = username;
+    userState.displayName = profile.displayName;
+    userState.photoURL = profile.photoURL;
+  },
+
+  async ensureUniqueUsername(baseUsername) {
+    const usersSnapshot = await window.db.ref('users').once('value');
+    const users = usersSnapshot.val() || {};
+    
+    const existingUsernames = new Set();
+    Object.values(users).forEach(user => {
+      if (user.profile && user.profile.username) {
+        existingUsernames.add(user.profile.username);
+      }
+    });
+    
+    let username = baseUsername;
+    let counter = 1;
+    
+    while (existingUsernames.has(username)) {
+      username = `${baseUsername}${counter}`;
+      counter++;
+    }
+    
+    return username;
+  },
+
+  getRandomAvatar() {
+    const avatars = ['😀', '😎', '🤓', '🥳', '🤠', '👻', '🤖', '👽', '🐶', '🐱', '🦊', '🐼', '🦁', '🐯', '🦄', '🐸'];
+    return avatars[Math.floor(Math.random() * avatars.length)];
+  },
+
+  async loadUserStats() {
+    if (!userState.userId) return;
+    
+    const statsSnapshot = await window.db.ref(`users/${userState.userId}/stats`).once('value');
+    userState.stats = statsSnapshot.val() || {
+      totalGames: 0,
+      totalWins: 0,
+      averageScore: 0,
+      bestScore: 0,
+      currentStreak: 0,
+      longestStreak: 0
+    };
+  },
+
+  updateAuthUI() {
+    // Update any UI elements that show user info
+    const authSection = document.getElementById('auth-section');
+    if (!authSection.classList.contains('hidden')) {
+      // Pre-fill name if available
+      const playerNameInput = document.getElementById('playerName');
+      if (playerNameInput && userState.displayName) {
+        playerNameInput.value = userState.displayName;
+      }
+    }
+  },
+
+  showAuthPrompt() {
+    // Add sign-in prompt to landing page
+    const authSection = document.getElementById('auth-section');
+    const existingPrompt = document.getElementById('auth-prompt');
+    
+    if (!existingPrompt && authSection && !authSection.classList.contains('hidden')) {
+      const prompt = document.createElement('div');
+      prompt.id = 'auth-prompt';
+      prompt.style.cssText = 'margin: 20px auto; padding: 16px; background: var(--bg-card); border-radius: var(--border-radius); max-width: 400px; text-align: center;';
+      prompt.innerHTML = `
+        <p style="margin-bottom: 12px;">Want to save your stats and track progress?</p>
+        <div style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;">
+          <button onclick="authManager.showAuthModal('signup')" style="font-size: 0.95rem;">
+            📧 Sign Up
+          </button>
+          <button onclick="authManager.signInWithGoogle()" style="font-size: 0.95rem; background: #4285f4;">
+            🔐 Google Sign-In
+          </button>
+          <button onclick="authManager.signInAnonymously()" style="font-size: 0.95rem; background: #666;">
+            👻 Play as Guest
+          </button>
+        </div>
+        <p style="margin-top: 12px; font-size: 0.85rem; opacity: 0.7;">
+          Already have an account? <a href="#" onclick="authManager.showAuthModal('login'); return false;" style="color: var(--color-accent);">Sign In</a>
+        </p>
+      `;
+      
+      authSection.insertBefore(prompt, authSection.querySelector('div[style*="max-width: 400px"]'));
+    }
+  },
+
+  async signInAnonymously() {
+    try {
+      const result = await window.auth.signInAnonymously();
+      utils.showNotification('✅ Playing as guest! Your progress will be saved temporarily.');
+      return result.user;
+    } catch (error) {
+      console.error('Anonymous sign-in error:', error);
+      utils.showNotification('❌ Failed to start guest session. Please try again.');
+      throw error;
+    }
+  },
+
+  async signInWithEmail(email, password) {
+    try {
+      const result = await window.auth.signInWithEmailAndPassword(email, password);
+      utils.showNotification('✅ Welcome back!');
+      modalManager.hide('auth-modal');
+      return result.user;
+    } catch (error) {
+      console.error('Email sign-in error:', error);
+      let message = 'Failed to sign in. ';
+      
+      switch (error.code) {
+        case 'auth/user-not-found':
+          message += 'No account found with this email.';
+          break;
+        case 'auth/wrong-password':
+          message += 'Incorrect password.';
+          break;
+        case 'auth/invalid-email':
+          message += 'Invalid email address.';
+          break;
+        case 'auth/user-disabled':
+          message += 'This account has been disabled.';
+          break;
+        default:
+          message += error.message;
+      }
+      
+      throw new Error(message);
+    }
+  },
+
+  async signUpWithEmail(email, password, displayName) {
+    try {
+      const result = await window.auth.createUserWithEmailAndPassword(email, password);
+      
+      // Update display name
+      await result.user.updateProfile({ displayName });
+      
+      utils.showNotification('✅ Account created successfully!');
+      modalManager.hide('auth-modal');
+      return result.user;
+    } catch (error) {
+      console.error('Email sign-up error:', error);
+      let message = 'Failed to create account. ';
+      
+      switch (error.code) {
+        case 'auth/email-already-in-use':
+          message += 'An account with this email already exists.';
+          break;
+        case 'auth/invalid-email':
+          message += 'Invalid email address.';
+          break;
+        case 'auth/weak-password':
+          message += 'Password should be at least 6 characters.';
+          break;
+        default:
+          message += error.message;
+      }
+      
+      throw new Error(message);
+    }
+  },
+
+  async signInWithGoogle() {
+    try {
+      const result = await window.auth.signInWithPopup(this.googleProvider);
+      utils.showNotification('✅ Signed in with Google!');
+      modalManager.hide('auth-modal');
+      return result.user;
+    } catch (error) {
+      console.error('Google sign-in error:', error);
+      
+      if (error.code === 'auth/popup-closed-by-user') {
+        utils.showNotification('❌ Sign-in cancelled.');
+      } else if (error.code === 'auth/popup-blocked') {
+        utils.showNotification('❌ Popup blocked. Please allow popups for this site.');
+      } else {
+        utils.showNotification('❌ Google sign-in failed. Please try again.');
+      }
+      
+      throw error;
+    }
+  },
+
+  async signOut() {
+    try {
+      await window.auth.signOut();
+      utils.showNotification('✅ Signed out successfully.');
+      
+      // Clear session
+      sessionManager.clearSession();
+      
+      // Reload page to reset state
+      setTimeout(() => location.reload(), 1000);
+    } catch (error) {
+      console.error('Sign-out error:', error);
+      utils.showNotification('❌ Failed to sign out.');
+    }
+  },
+
+  async upgradeAccount() {
+    if (!userState.currentUser || !userState.currentUser.isAnonymous) {
+      utils.showNotification('⚠️ You already have a full account!');
+      return;
+    }
+    
+    this.showAuthModal('upgrade');
+  },
+
+  async linkWithEmail(email, password) {
+    try {
+      const credential = firebase.auth.EmailAuthProvider.credential(email, password);
+      const result = await userState.currentUser.linkWithCredential(credential);
+      
+      // Update profile to mark as non-anonymous
+      await window.db.ref(`users/${userState.userId}/profile`).update({
+        email: email,
+        isAnonymous: false
+      });
+      
+      userState.isAnonymous = false;
+      
+      utils.showNotification('✅ Account upgraded! Your stats have been saved.');
+      modalManager.hide('auth-modal');
+      return result.user;
+    } catch (error) {
+      console.error('Account linking error:', error);
+      let message = 'Failed to upgrade account. ';
+      
+      switch (error.code) {
+        case 'auth/email-already-in-use':
+          message += 'This email is already registered. Please sign in instead.';
+          break;
+        case 'auth/invalid-email':
+          message += 'Invalid email address.';
+          break;
+        case 'auth/weak-password':
+          message += 'Password should be at least 6 characters.';
+          break;
+        default:
+          message += error.message;
+      }
+      
+      throw new Error(message);
+    }
+  },
+
+  async linkWithGoogle() {
+    try {
+      const result = await userState.currentUser.linkWithPopup(this.googleProvider);
+      
+      // Update profile
+      await window.db.ref(`users/${userState.userId}/profile`).update({
+        email: result.user.email,
+        displayName: result.user.displayName,
+        photoURL: result.user.photoURL,
+        isAnonymous: false
+      });
+      
+      userState.isAnonymous = false;
+      
+      utils.showNotification('✅ Account upgraded with Google! Your stats have been saved.');
+      modalManager.hide('auth-modal');
+      return result.user;
+    } catch (error) {
+      console.error('Google linking error:', error);
+      
+      if (error.code === 'auth/credential-already-in-use') {
+        utils.showNotification('❌ This Google account is already registered. Please sign in instead.');
+      } else {
+        utils.showNotification('❌ Failed to upgrade account.');
+      }
+      
+      throw error;
+    }
+  },
+
+  showAuthModal(mode = 'login') {
+    const modal = document.getElementById('auth-modal');
+    const modalContent = modal.querySelector('.modal-content');
+    
+    let html = '<button class="close" onclick="modalManager.hide(\'auth-modal\')">&times;</button>';
+    
+    if (mode === 'login') {
+      html += `
+        <h2>Sign In to DALORF</h2>
+        <form id="login-form" style="max-width: 400px; margin: 20px auto;">
+          <div style="margin-bottom: 16px;">
+            <input type="email" id="login-email" placeholder="Email" required 
+                   style="width: 100%; max-width: 100%;">
+          </div>
+          <div style="margin-bottom: 16px;">
+            <input type="password" id="login-password" placeholder="Password" required 
+                   style="width: 100%; max-width: 100%;">
+          </div>
+          <div id="login-error" class="error-message hidden"></div>
+          <button type="submit" style="width: 100%;">Sign In</button>
+          <button type="button" onclick="authManager.signInWithGoogle()" 
+                  style="width: 100%; background: #4285f4; margin-top: 8px;">
+            🔐 Sign In with Google
+          </button>
+        </form>
+        <p style="text-align: center; margin-top: 16px;">
+          Don't have an account? 
+          <a href="#" onclick="authManager.showAuthModal('signup'); return false;" 
+             style="color: var(--color-accent); font-weight: 600;">Sign Up</a>
+        </p>
+      `;
+    } else if (mode === 'signup') {
+      html += `
+        <h2>Create DALORF Account</h2>
+        <form id="signup-form" style="max-width: 400px; margin: 20px auto;">
+          <div style="margin-bottom: 16px;">
+            <input type="text" id="signup-displayname" placeholder="Display Name" required 
+                   style="width: 100%; max-width: 100%;">
+          </div>
+          <div style="margin-bottom: 16px;">
+            <input type="email" id="signup-email" placeholder="Email" required 
+                   style="width: 100%; max-width: 100%;">
+          </div>
+          <div style="margin-bottom: 16px;">
+            <input type="password" id="signup-password" placeholder="Password (min 6 characters)" required 
+                   style="width: 100%; max-width: 100%;">
+          </div>
+          <div id="signup-error" class="error-message hidden"></div>
+          <button type="submit" style="width: 100%;">Create Account</button>
+          <button type="button" onclick="authManager.signInWithGoogle()" 
+                  style="width: 100%; background: #4285f4; margin-top: 8px;">
+            🔐 Sign Up with Google
+          </button>
+        </form>
+        <p style="text-align: center; margin-top: 16px;">
+          Already have an account? 
+          <a href="#" onclick="authManager.showAuthModal('login'); return false;" 
+             style="color: var(--color-accent); font-weight: 600;">Sign In</a>
+        </p>
+      `;
+    } else if (mode === 'upgrade') {
+      html += `
+        <h2>💎 Upgrade Your Account</h2>
+        <p style="text-align: center; margin-bottom: 20px;">
+          Save your progress permanently and unlock full features!
+        </p>
+        <form id="upgrade-form" style="max-width: 400px; margin: 20px auto;">
+          <div style="margin-bottom: 16px;">
+            <input type="email" id="upgrade-email" placeholder="Email" required 
+                   style="width: 100%; max-width: 100%;">
+          </div>
+          <div style="margin-bottom: 16px;">
+            <input type="password" id="upgrade-password" placeholder="Password (min 6 characters)" required 
+                   style="width: 100%; max-width: 100%;">
+          </div>
+          <div id="upgrade-error" class="error-message hidden"></div>
+          <button type="submit" style="width: 100%;">Upgrade with Email</button>
+          <button type="button" onclick="authManager.linkWithGoogle()" 
+                  style="width: 100%; background: #4285f4; margin-top: 8px;">
+            🔐 Upgrade with Google
+          </button>
+        </form>
+        <p style="text-align: center; margin-top: 16px; font-size: 0.9rem; opacity: 0.8;">
+          Your current stats and game history will be preserved!
+        </p>
+      `;
+    }
+    
+    modalContent.innerHTML = html;
+    modalManager.show('auth-modal');
+    
+    // Attach form handlers
+    setTimeout(() => {
+      if (mode === 'login') {
+        document.getElementById('login-form').onsubmit = async (e) => {
+          e.preventDefault();
+          const email = document.getElementById('login-email').value;
+          const password = document.getElementById('login-password').value;
+          const errorEl = document.getElementById('login-error');
+          
+          try {
+            await this.signInWithEmail(email, password);
+          } catch (error) {
+            errorEl.textContent = error.message;
+            errorEl.classList.remove('hidden');
+          }
+        };
+      } else if (mode === 'signup') {
+        document.getElementById('signup-form').onsubmit = async (e) => {
+          e.preventDefault();
+          const displayName = document.getElementById('signup-displayname').value;
+          const email = document.getElementById('signup-email').value;
+          const password = document.getElementById('signup-password').value;
+          const errorEl = document.getElementById('signup-error');
+          
+          try {
+            await this.signUpWithEmail(email, password, displayName);
+          } catch (error) {
+            errorEl.textContent = error.message;
+            errorEl.classList.remove('hidden');
+          }
+        };
+      } else if (mode === 'upgrade') {
+        document.getElementById('upgrade-form').onsubmit = async (e) => {
+          e.preventDefault();
+          const email = document.getElementById('upgrade-email').value;
+          const password = document.getElementById('upgrade-password').value;
+          const errorEl = document.getElementById('upgrade-error');
+          
+          try {
+            await this.linkWithEmail(email, password);
+          } catch (error) {
+            errorEl.textContent = error.message;
+            errorEl.classList.remove('hidden');
+          }
+        };
+      }
+    }, 100);
+  },
+
+  async updateProfile(updates) {
+    if (!userState.userId) return;
+    
+    try {
+      await window.db.ref(`users/${userState.userId}/profile`).update(updates);
+      
+      // Update local state
+      Object.assign(userState, updates);
+      
+      utils.showNotification('✅ Profile updated!');
+    } catch (error) {
+      console.error('Profile update error:', error);
+      utils.showNotification('❌ Failed to update profile.');
+      throw error;
+    }
+  }
+};
+
     const AUTOMATED_QUESTIONS = {
       light: [
         { q: "What's my favorite color?", opts: ["Blue", "Red", "Green", "Purple"] },
@@ -1338,10 +3032,565 @@
       ]
     };
 
+    const statsManager = {
+  async saveGameResults(gameData) {
+    if (!userState.userId || userState.isAnonymous) {
+      console.log('Skipping stats save for anonymous user');
+      return;
+    }
+
+    const {
+      myScore,
+      theirScore,
+      opponentUserId,
+      opponentName,
+      roundNumber = 1,
+      questionsCount
+    } = gameData;
+
+    try {
+      // Update personal stats
+      await this.updatePersonalStats(myScore, theirScore);
+      
+      // Update partnership stats
+      if (opponentUserId) {
+        await this.updatePartnershipStats(opponentUserId, opponentName, myScore, theirScore);
+      }
+      
+      // Update global leaderboard
+      await this.updateGlobalLeaderboard(myScore);
+      
+      // Save game history
+      await this.saveGameHistory(gameData);
+      
+      // Check for achievements
+      await this.checkAchievements(myScore);
+      
+    } catch (error) {
+      console.error('Error saving game results:', error);
+    }
+  },
+
+  async updatePersonalStats(myScore, theirScore = null) {
+    const userId = userState.userId;
+    const statsRef = window.db.ref(`users/${userId}/stats`);
+    
+    const snapshot = await statsRef.once('value');
+    const currentStats = snapshot.val() || {
+      totalGames: 0,
+      totalWins: 0,
+      averageScore: 0,
+      bestScore: 0,
+      currentStreak: 0,
+      longestStreak: 0,
+      lastPlayed: null,
+      totalScore: 0
+    };
+
+    const isWin = myScore >= 70; // 70% or higher is a "win"
+    const newTotalGames = currentStats.totalGames + 1;
+    const newTotalWins = currentStats.totalWins + (isWin ? 1 : 0);
+    const newTotalScore = (currentStats.totalScore || 0) + myScore;
+    const newAverageScore = Math.round(newTotalScore / newTotalGames);
+    const newBestScore = Math.max(currentStats.bestScore, myScore);
+    
+    // Update streak
+    let newCurrentStreak = isWin ? currentStats.currentStreak + 1 : 0;
+    let newLongestStreak = Math.max(currentStats.longestStreak, newCurrentStreak);
+
+    const updatedStats = {
+      totalGames: newTotalGames,
+      totalWins: newTotalWins,
+      averageScore: newAverageScore,
+      bestScore: newBestScore,
+      currentStreak: newCurrentStreak,
+      longestStreak: newLongestStreak,
+      lastPlayed: Date.now(),
+      totalScore: newTotalScore
+    };
+
+    await statsRef.update(updatedStats);
+    
+    // Update local state
+    userState.stats = updatedStats;
+  },
+
+  async updatePartnershipStats(opponentUserId, opponentName, myScore, theirScore) {
+    const userId = userState.userId;
+    
+    // Create partnership ID (alphabetically sorted for consistency)
+    const partnershipId = [userId, opponentUserId].sort().join('_');
+    
+    const partnershipRef = window.db.ref(`partnerships/${partnershipId}`);
+    const snapshot = await partnershipRef.once('value');
+    
+    const currentData = snapshot.val() || {
+      players: {
+        [userId]: { name: userState.displayName || userState.username },
+        [opponentUserId]: { name: opponentName }
+      },
+      gamesPlayed: 0,
+      scores: [],
+      createdAt: Date.now()
+    };
+
+    // Add new game score
+    const newScores = [...(currentData.scores || []), {
+      timestamp: Date.now(),
+      [userId]: myScore,
+      [opponentUserId]: theirScore || 0,
+      roundNumber: gameState.currentRound || 1
+    }];
+
+    // Keep only last 50 games
+    if (newScores.length > 50) {
+      newScores.shift();
+    }
+
+    // Calculate average scores
+    const myScores = newScores.map(s => s[userId] || 0);
+    const theirScores = newScores.map(s => s[opponentUserId] || 0);
+    
+    const myAvgScore = Math.round(myScores.reduce((a, b) => a + b, 0) / myScores.length);
+    const theirAvgScore = Math.round(theirScores.reduce((a, b) => a + b, 0) / theirScores.length);
+
+    const updatedData = {
+      ...currentData,
+      players: {
+        [userId]: { 
+          name: userState.displayName || userState.username,
+          avgScore: myAvgScore 
+        },
+        [opponentUserId]: { 
+          name: opponentName,
+          avgScore: theirAvgScore 
+        }
+      },
+      gamesPlayed: currentData.gamesPlayed + 1,
+      scores: newScores,
+      lastPlayed: Date.now()
+    };
+
+    await partnershipRef.set(updatedData);
+    
+    // Also update user's game partners list
+    await window.db.ref(`users/${userId}/gamePartners/${opponentUserId}`).set({
+      name: opponentName,
+      gamesPlayed: updatedData.gamesPlayed,
+      myAvgScore: myAvgScore,
+      theirAvgScore: theirAvgScore,
+      lastPlayed: Date.now()
+    });
+  },
+
+  async updateGlobalLeaderboard(score) {
+    const userId = userState.userId;
+    const leaderboardRef = window.db.ref('leaderboards/global');
+    
+    const snapshot = await leaderboardRef.once('value');
+    const leaderboard = snapshot.val() || { players: [] };
+    
+    // Find user in leaderboard
+    let playerEntry = leaderboard.players.find(p => p.userId === userId);
+    
+    if (playerEntry) {
+      // Update existing entry
+      playerEntry.totalGames++;
+      playerEntry.totalScore += score;
+      playerEntry.avgScore = Math.round(playerEntry.totalScore / playerEntry.totalGames);
+      playerEntry.bestScore = Math.max(playerEntry.bestScore, score);
+      playerEntry.lastPlayed = Date.now();
+    } else {
+      // Add new entry
+      playerEntry = {
+        userId: userId,
+        username: userState.username,
+        displayName: userState.displayName,
+        photoURL: userState.photoURL,
+        totalGames: 1,
+        totalScore: score,
+        avgScore: score,
+        bestScore: score,
+        lastPlayed: Date.now()
+      };
+      leaderboard.players.push(playerEntry);
+    }
+    
+    // Sort by average score (descending)
+    leaderboard.players.sort((a, b) => b.avgScore - a.avgScore);
+    
+    // Keep top 100 only
+    if (leaderboard.players.length > 100) {
+      leaderboard.players = leaderboard.players.slice(0, 100);
+    }
+    
+    await leaderboardRef.set(leaderboard);
+  },
+
+  async saveGameHistory(gameData) {
+    const userId = userState.userId;
+    const historyRef = window.db.ref(`users/${userId}/gameHistory`);
+    
+    const gameRecord = {
+      timestamp: Date.now(),
+      roomCode: gameState.roomCode,
+      opponentName: gameData.opponentName,
+      opponentUserId: gameData.opponentUserId || null,
+      myScore: gameData.myScore,
+      theirScore: gameData.theirScore,
+      roundNumber: gameData.roundNumber || 1,
+      questionsCount: gameData.questionsCount || 5
+    };
+    
+    // Push to history
+    await historyRef.push(gameRecord);
+    
+    // Clean up old history (keep last 100 games)
+    const historySnapshot = await historyRef.orderByChild('timestamp').once('value');
+    const history = historySnapshot.val();
+    
+    if (history) {
+      const entries = Object.entries(history);
+      if (entries.length > 100) {
+        // Remove oldest entries
+        const toRemove = entries
+          .sort((a, b) => a[1].timestamp - b[1].timestamp)
+          .slice(0, entries.length - 100);
+        
+        const updates = {};
+        toRemove.forEach(([key]) => {
+          updates[key] = null;
+        });
+        
+        await historyRef.update(updates);
+      }
+    }
+  },
+
+  async checkAchievements(score) {
+    const achievements = [];
+    const stats = userState.stats;
+    
+    if (!stats) return;
+    
+    // First game
+    if (stats.totalGames === 1) {
+      achievements.push({ 
+        title: '🎮 First Game', 
+        description: 'Played your first DALORF game!' 
+      });
+    }
+    
+    // Perfect score
+    if (score === 100) {
+      achievements.push({ 
+        title: '💎 Perfect Score', 
+        description: 'Got 100% on a game!' 
+      });
+    }
+    
+    // Win streak milestones
+    if (stats.currentStreak === 3) {
+      achievements.push({ 
+        title: '🔥 Hot Streak', 
+        description: '3 wins in a row!' 
+      });
+    }
+    if (stats.currentStreak === 5) {
+      achievements.push({ 
+        title: '🔥🔥 Blazing Streak', 
+        description: '5 wins in a row!' 
+      });
+    }
+    if (stats.currentStreak === 10) {
+      achievements.push({ 
+        title: '🔥🔥🔥 Legendary Streak', 
+        description: '10 wins in a row!' 
+      });
+    }
+    
+    // Game count milestones
+    if (stats.totalGames === 10) {
+      achievements.push({ 
+        title: '🎯 Dedicated Player', 
+        description: 'Played 10 games!' 
+      });
+    }
+    if (stats.totalGames === 50) {
+      achievements.push({ 
+        title: '🏆 DALORF Enthusiast', 
+        description: 'Played 50 games!' 
+      });
+    }
+    if (stats.totalGames === 100) {
+      achievements.push({ 
+        title: '👑 DALORF Legend', 
+        description: 'Played 100 games!' 
+      });
+    }
+    
+    // Show achievements
+    if (achievements.length > 0) {
+      setTimeout(() => {
+        achievements.forEach((achievement, index) => {
+          setTimeout(() => {
+            this.showAchievement(achievement);
+          }, index * 2000);
+        });
+      }, 2000); // Show after results are displayed
+    }
+  },
+
+  showAchievement(achievement) {
+    const achievementEl = document.createElement('div');
+    achievementEl.className = 'achievement-badge';
+    achievementEl.innerHTML = `
+      <div style="font-size: 1.3rem; margin-bottom: 4px;">${achievement.title}</div>
+      <div style="font-size: 0.9rem; opacity: 0.9;">${achievement.description}</div>
+    `;
+    achievementEl.style.cssText = `
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 3000;
+      padding: 24px 32px;
+      background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-hover) 100%);
+      color: white;
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      animation: badgeAppear 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+      text-align: center;
+    `;
+    
+    document.body.appendChild(achievementEl);
+    
+    setTimeout(() => {
+      achievementEl.style.animation = 'fadeOut 0.5s ease';
+      setTimeout(() => achievementEl.remove(), 500);
+    }, 3000);
+  },
+
+  async getPersonalStats() {
+    if (!userState.userId) return null;
+    
+    const statsSnapshot = await window.db.ref(`users/${userState.userId}/stats`).once('value');
+    const stats = statsSnapshot.val();
+    
+    if (!stats) return null;
+    
+    // Calculate additional metrics
+    const winRate = stats.totalGames > 0 
+      ? Math.round((stats.totalWins / stats.totalGames) * 100) 
+      : 0;
+    
+    return {
+      ...stats,
+      winRate
+    };
+  },
+
+  async getGamePartners() {
+    if (!userState.userId) return [];
+    
+    const partnersSnapshot = await window.db.ref(`users/${userState.userId}/gamePartners`).once('value');
+    const partners = partnersSnapshot.val();
+    
+    if (!partners) return [];
+    
+    // Convert to array and sort by games played
+    return Object.entries(partners)
+      .map(([partnerId, data]) => ({
+        partnerId,
+        ...data
+      }))
+      .sort((a, b) => b.gamesPlayed - a.gamesPlayed);
+  },
+
+  async getPartnershipDetails(partnerId) {
+    const userId = userState.userId;
+    const partnershipId = [userId, partnerId].sort().join('_');
+    
+    const snapshot = await window.db.ref(`partnerships/${partnershipId}`).once('value');
+    return snapshot.val();
+  },
+
+  async getGlobalLeaderboard(limit = 20) {
+    const snapshot = await window.db.ref('leaderboards/global/players')
+      .orderByChild('avgScore')
+      .limitToLast(limit)
+      .once('value');
+    
+    const players = snapshot.val();
+    
+    if (!players) return [];
+    
+    // Convert to array and reverse (highest score first)
+    return Object.values(players).reverse();
+  },
+
+  async getMyRank() {
+    if (!userState.userId) return null;
+    
+    const leaderboard = await this.getGlobalLeaderboard(100);
+    const myRank = leaderboard.findIndex(p => p.userId === userState.userId);
+    
+    return myRank !== -1 ? myRank + 1 : null;
+  },
+
+  async getGameHistory(limit = 20) {
+    if (!userState.userId) return [];
+    
+    const snapshot = await window.db.ref(`users/${userState.userId}/gameHistory`)
+      .orderByChild('timestamp')
+      .limitToLast(limit)
+      .once('value');
+    
+    const history = snapshot.val();
+    
+    if (!history) return [];
+    
+    // Convert to array and reverse (newest first)
+    return Object.entries(history)
+      .map(([id, data]) => ({ id, ...data }))
+      .reverse();
+  },
+
+  formatStats(stats) {
+    if (!stats) return 'No stats available';
+    
+    return `
+      Games: ${stats.totalGames} | 
+      Wins: ${stats.totalWins} | 
+      Win Rate: ${stats.winRate}% | 
+      Avg Score: ${stats.averageScore}% | 
+      Best: ${stats.bestScore}% | 
+      Streak: ${stats.currentStreak} 🔥
+    `;
+  },
+
+  async getUserIdByName(playerName) {
+    // Search for user by display name or username
+    const usersSnapshot = await window.db.ref('users').once('value');
+    const users = usersSnapshot.val();
+    
+    if (!users) return null;
+    
+    for (const [userId, userData] of Object.entries(users)) {
+      if (userData.profile) {
+        const profile = userData.profile;
+        if (profile.displayName === playerName || profile.username === playerName) {
+          return userId;
+        }
+      }
+    }
+    
+    return null;
+  },
+
+  async createSession(roomCode) {
+    if (!userState.userId) return null;
+    
+    const sessionId = `session_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
+    
+    const sessionData = {
+      sessionId,
+      roomCode,
+      players: [userState.userId],
+      createdBy: userState.userId,
+      createdAt: Date.now(),
+      lastActivity: Date.now(),
+      currentRound: 1,
+      status: 'active'
+    };
+    
+    await window.db.ref(`sessions/${sessionId}`).set(sessionData);
+    
+    userState.sessionId = sessionId;
+    return sessionId;
+  },
+
+  async addPlayerToSession(sessionId, playerId) {
+    const sessionRef = window.db.ref(`sessions/${sessionId}`);
+    const snapshot = await sessionRef.once('value');
+    const session = snapshot.val();
+    
+    if (!session) {
+      console.error('Session not found');
+      return;
+    }
+    
+    if (!session.players.includes(playerId)) {
+      session.players.push(playerId);
+      session.lastActivity = Date.now();
+      
+      await sessionRef.update({
+        players: session.players,
+        lastActivity: session.lastActivity
+      });
+    }
+  },
+
+  async saveRoundResults(sessionId, roundNumber, results) {
+    const roundRef = window.db.ref(`sessions/${sessionId}/rounds/${roundNumber}`);
+    
+    await roundRef.set({
+      ...results,
+      completedAt: Date.now()
+    });
+    
+    // Update session last activity
+    await window.db.ref(`sessions/${sessionId}`).update({
+      lastActivity: Date.now(),
+      currentRound: roundNumber
+    });
+  },
+
+  async getSessionRounds(sessionId) {
+    const snapshot = await window.db.ref(`sessions/${sessionId}/rounds`).once('value');
+    return snapshot.val() || {};
+  },
+
+  async incrementSessionRound(sessionId) {
+    const sessionRef = window.db.ref(`sessions/${sessionId}`);
+    const snapshot = await sessionRef.once('value');
+    const session = snapshot.val();
+    
+    if (!session) return 1;
+    
+    const newRound = (session.currentRound || 1) + 1;
+    
+    await sessionRef.update({
+      currentRound: newRound,
+      lastActivity: Date.now()
+    });
+    
+    return newRound;
+  },
+
+  async endSession(sessionId) {
+    await window.db.ref(`sessions/${sessionId}`).update({
+      status: 'completed',
+      endedAt: Date.now()
+    });
+  },
+
+  calculateTrendingScore(avgScore, gamesPlayed, recentActivity) {
+    // Trending score formula: avgScore * (1 + log(gamesPlayed)) * activityBonus
+    const activityBonus = recentActivity < 7 ? 1.2 : recentActivity < 30 ? 1.0 : 0.8;
+    const gamesBonus = gamesPlayed > 0 ? Math.log10(gamesPlayed + 1) : 0;
+    
+    return avgScore * (1 + gamesBonus * 0.1) * activityBonus;
+  }
+};
+
     let gameState = {
       playerName: null,
       roomCode: null,
       otherPlayerName: null,
+      opponentUserId: null,
+      opponentName: null,
+      currentRound: 1,
       requiredQuestionCount: 5,
       reviewEndTime: null,
       reviewInterval: null,
@@ -1483,7 +3732,6 @@
         if (!modal) return;
         
         modal.style.display = 'block';
-        modal.setAttribute('aria-hidden', 'false');
         document.body.style.overflow = 'hidden';
         
         const firstFocusable = modal.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
@@ -1568,8 +3816,18 @@
           if (otherPlayer && !gameState.otherPlayerName) {
             gameState.otherPlayerName = otherPlayer;
             this.updateRoomInfo();
+            
+            // Try to get opponent's userId for stats tracking
+            if (!gameState.opponentUserId) {
+              statsManager.getUserIdByName(otherPlayer).then(userId => {
+                if (userId) {
+                  gameState.opponentUserId = userId;
+                  gameState.opponentName = otherPlayer;
+                }
+              });
+            }
           }
-          
+
           // Only check for transition if both players exist
           if (players.length === 2) {
             const myState = states[gameState.playerName]?.state;
@@ -1731,9 +3989,14 @@
             throw new Error('Database not available');
           }
 
+          // Create session for multi-round tracking
+          const sessionId = await statsManager.createSession(gameState.roomCode);
+          
           await window.db.ref(`rooms/${gameState.roomCode}/settings`).set({
             creator: gameState.playerName,
-            createdAt: Date.now()
+            createdAt: Date.now(),
+            sessionId: sessionId,
+            creatorUserId: userState.userId
           });
           
           await dbManager.updateGameState(GAME_STATES.SETUP);
@@ -1744,6 +4007,9 @@
           utils.announceToScreenReader(`Room created with code ${gameState.roomCode}`);
           
           this.showSection('question-setup-section');
+          
+          // Save session for reconnection
+          sessionManager.saveSession();
         } catch (error) {
           console.error('Error creating room:', error);
           utils.showError('auth-error', 'Failed to create room. Please check your connection and try again.');
@@ -1780,6 +4046,17 @@
             const settings = snapshot.val();
             const creatorName = settings.creator;
             
+            // Track opponent userId for stats
+            if (settings.creatorUserId) {
+              gameState.opponentUserId = settings.creatorUserId;
+              gameState.opponentName = creatorName;
+            }
+            
+            // Add self to session if it exists
+            if (settings.sessionId && userState.userId) {
+              await statsManager.addPlayerToSession(settings.sessionId, userState.userId);
+            }
+            
             await dbManager.updateGameState(GAME_STATES.SETUP);
             dbManager.listenForGameStateChanges();
             
@@ -1791,6 +4068,9 @@
             if (settings.requiredQuestionCount) {
               gameState.requiredQuestionCount = settings.requiredQuestionCount;
               this.enterQuestionMode();
+              
+              // Save session for reconnection
+              sessionManager.saveSession();
             } else {
               this.showSection('waiting-section');
               document.getElementById('waiting-section').innerHTML = 
@@ -1832,6 +4112,14 @@
           await window.db.ref(`rooms/${gameState.roomCode}/settings`).update({
             requiredQuestionCount: gameState.requiredQuestionCount
           });
+          
+          // Save current round info
+          if (userState.sessionId) {
+            await window.db.ref(`sessions/${userState.sessionId}`).update({
+              currentRound: gameState.currentRound,
+              lastActivity: Date.now()
+            });
+          }
           
           this.enterQuestionMode();
         } catch (error) {
@@ -2398,7 +4686,7 @@
         }
       },
 
-      calculateResults(answers, questions, otherPlayer, allQuestions, otherPlayerAnswers = null) {
+      async calculateResults(answers, questions, otherPlayer, allQuestions, otherPlayerAnswers = null) {
         let correctCount = 0;
         let breakdown = '';
         
@@ -2474,6 +4762,12 @@
             
             <div style="text-align: center; margin-top: 40px; padding: 24px; background: var(--bg-card); border-radius: var(--border-radius-large); box-shadow: var(--shadow-medium);">
               <h4 style="margin-bottom: 16px;">Share Your Results 🎉</h4>
+              ${gameState.opponentUserId ? `
+                <button onclick="startNewRound()" style="background: #10B981; width: 100%; font-size: 1.2rem; padding: 16px;">
+                  🔄 Play Another Round with ${otherPlayer}
+                </button>
+                <hr style="margin: 20px 0; border: 1px solid var(--border-input);">
+              ` : ''}
               <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
                 <button onclick="shareResults('image')" style="background: #8B5CF6;">
                   🖼️ Share Image
@@ -2491,6 +4785,20 @@
         `;
 
         utils.announceToScreenReader(`Results ready. You scored ${percent} percent - ${tag}`);
+        
+        // Save game results to stats (for authenticated users only)
+        if (userState.userId && !userState.isAnonymous && gameState.opponentUserId) {
+          const otherPercent = otherCorrectCount > 0 ? Math.round((otherCorrectCount / allQuestions[gameState.playerName].length) * 100) : null;
+          
+          await statsManager.saveGameResults({
+            myScore: percent,
+            theirScore: otherPercent,
+            opponentUserId: gameState.opponentUserId,
+            opponentName: otherPlayer,
+            roundNumber: gameState.currentRound || 1,
+            questionsCount: questions.length
+          });
+        }
         
         this.cleanup();
       },
@@ -2617,7 +4925,648 @@
       }
     }
 
-    // Modal Functions (Global scope)
+    // ========================================
+// PROFILE & STATS UI FUNCTIONS
+// ========================================
+
+async function showProfile() {
+  if (!userState.userId) {
+    authManager.showAuthModal('login');
+    return;
+  }
+  
+  modalManager.show('profile-modal');
+  await loadProfileContent();
+}
+
+async function loadProfileContent() {
+  const container = document.getElementById('profile-content');
+  
+  if (!userState.userId) {
+    container.innerHTML = '<div class="empty-state">Please sign in to view your profile.</div>';
+    return;
+  }
+  
+  // Show loading
+  container.innerHTML = '<div class="loading-indicator">Loading profile...</div>';
+  
+  try {
+    // Load fresh stats
+    await authManager.loadUserStats();
+    const stats = userState.stats || {};
+    
+    const isAnonymous = userState.isAnonymous;
+    
+    let content = `
+      <div class="profile-card">
+        <div class="profile-avatar" id="current-avatar">${userState.photoURL || '😀'}</div>
+        <h3 style="margin: 8px 0 4px 0;">${userState.displayName || userState.username || 'Player'}</h3>
+        <p style="color: var(--text-secondary); font-size: 0.9rem;">@${userState.username || 'username'}</p>
+        
+        ${isAnonymous ? `
+          <div class="upgrade-prompt" style="margin-top: 16px;">
+            <h3>💎 Upgrade Your Account</h3>
+            <p>Save your progress permanently and unlock all features!</p>
+            <button onclick="authManager.upgradeAccount()">
+              Upgrade Now
+            </button>
+          </div>
+        ` : `
+          <button onclick="showAvatarPicker()" style="margin-top: 12px; font-size: 0.9rem;">
+            ✏️ Change Avatar
+          </button>
+        `}
+      </div>
+      
+      <div class="profile-info">
+        <div class="profile-info-item">
+          <span class="profile-info-label">Display Name</span>
+          <span class="profile-info-value" id="display-name-value">${userState.displayName || 'Not set'}</span>
+        </div>
+        ${!isAnonymous ? `
+          <button onclick="showDisplayNameEditor()" style="width: 100%; margin-top: 8px; font-size: 0.9rem;">
+            ✏️ Edit Display Name
+          </button>
+        ` : ''}
+        
+        ${userState.currentUser && userState.currentUser.email ? `
+          <div class="profile-info-item">
+            <span class="profile-info-label">Email</span>
+            <span class="profile-info-value">${userState.currentUser.email}</span>
+          </div>
+        ` : ''}
+        
+        <div class="profile-info-item">
+          <span class="profile-info-label">Member Since</span>
+          <span class="profile-info-value">${formatDate(userState.stats?.lastPlayed || Date.now())}</span>
+        </div>
+      </div>
+      
+      <div style="margin-top: 24px;">
+        <h3 style="text-align: center; margin-bottom: 16px;">Quick Stats</h3>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-value">${stats.totalGames || 0}</div>
+            <div class="stat-label">Games</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">${stats.averageScore || 0}%</div>
+            <div class="stat-label">Avg Score</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">${stats.bestScore || 0}%</div>
+            <div class="stat-label">Best Score</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">${stats.currentStreak || 0}🔥</div>
+            <div class="stat-label">Streak</div>
+          </div>
+        </div>
+        
+        <button onclick="showStats()" style="width: 100%; margin-top: 16px;">
+          📊 View Full Stats & Leaderboards
+        </button>
+      </div>
+    `;
+    
+    container.innerHTML = content;
+    
+  } catch (error) {
+    console.error('Error loading profile:', error);
+    container.innerHTML = '<div class="error-message">Failed to load profile. Please try again.</div>';
+  }
+}
+
+async function showAvatarPicker() {
+  const container = document.getElementById('profile-content');
+  
+  const avatars = [
+    '😀', '😃', '😄', '😁', '😆', '😅', '🤣', '😂', '🙂', '🙃', 
+    '😉', '😊', '😇', '🥰', '😍', '🤩', '😘', '😗', '😚', '😙',
+    '😋', '😛', '😜', '🤪', '😝', '🤑', '🤗', '🤭', '🤫', '🤔',
+    '🤐', '🤨', '😐', '😑', '😶', '😏', '😒', '🙄', '😬', '🤥',
+    '😌', '😔', '😪', '🤤', '😴', '😷', '🤒', '🤕', '🤢', '🤮',
+    '🤧', '🥵', '🥶', '🥴', '😵', '🤯', '🤠', '🥳', '😎', '🤓',
+    '🧐', '😕', '😟', '🙁', '☹️', '😮', '😯', '😲', '😳', '🥺',
+    '😦', '😧', '😨', '😰', '😥', '😢', '😭', '😱', '😖', '😣',
+    '😞', '😓', '😩', '😫', '🥱', '😤', '😡', '😠', '🤬', '😈',
+    '👿', '💀', '☠️', '💩', '🤡', '👹', '👺', '👻', '👽', '👾',
+    '🤖', '😺', '😸', '😹', '😻', '😼', '😽', '🙀', '😿', '😾',
+    '🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯',
+    '🦁', '🐮', '🐷', '🐸', '🐵', '🐔', '🐧', '🐦', '🐤', '🦆',
+    '🦅', '🦉', '🦇', '🐺', '🐗', '🐴', '🦄', '🐝', '🐛', '🦋',
+    '🐌', '🐞', '🐜', '🦟', '🦗', '🕷️', '🦂', '🐢', '🐍', '🦎',
+    '🦖', '🦕', '🐙', '🦑', '🦐', '🦞', '🦀', '🐡', '🐠', '🐟',
+    '🐬', '🐳', '🐋', '🦈', '🐊', '🐅', '🐆', '🦓', '🦍', '🦧'
+  ];
+  
+  const currentAvatar = userState.photoURL || '😀';
+  
+  let content = `
+    <div style="text-align: center; margin-bottom: 16px;">
+      <button onclick="loadProfileContent()" style="font-size: 0.9rem;">
+        ← Back to Profile
+      </button>
+    </div>
+    
+    <h3 style="text-align: center; margin-bottom: 16px;">Choose Your Avatar</h3>
+    
+    <div class="profile-avatar" style="margin: 0 auto 24px;">
+      <span id="preview-avatar">${currentAvatar}</span>
+    </div>
+    
+    <div class="avatar-picker">
+      ${avatars.map(emoji => `
+        <div class="avatar-option ${emoji === currentAvatar ? 'selected' : ''}" 
+             onclick="selectAvatar('${emoji}')"
+             data-avatar="${emoji}">
+          ${emoji}
+        </div>
+      `).join('')}
+    </div>
+    
+    <button onclick="saveAvatar()" style="width: 100%; margin-top: 16px;">
+      💾 Save Avatar
+    </button>
+  `;
+  
+  container.innerHTML = content;
+}
+
+function selectAvatar(emoji) {
+  // Update preview
+  document.getElementById('preview-avatar').textContent = emoji;
+  
+  // Update selection styling
+  document.querySelectorAll('.avatar-option').forEach(option => {
+    option.classList.remove('selected');
+  });
+  document.querySelector(`[data-avatar="${emoji}"]`).classList.add('selected');
+  
+  // Store temporarily
+  window.tempSelectedAvatar = emoji;
+}
+
+async function saveAvatar() {
+  const selectedAvatar = window.tempSelectedAvatar || userState.photoURL;
+  
+  try {
+    await authManager.updateProfile({ photoURL: selectedAvatar });
+    utils.showNotification('✅ Avatar updated!');
+    await loadProfileContent();
+  } catch (error) {
+    console.error('Error saving avatar:', error);
+    utils.showNotification('❌ Failed to save avatar');
+  }
+}
+
+async function showDisplayNameEditor() {
+  const container = document.getElementById('profile-content');
+  
+  const currentName = userState.displayName || userState.username || '';
+  
+  let content = `
+    <div style="text-align: center; margin-bottom: 16px;">
+      <button onclick="loadProfileContent()" style="font-size: 0.9rem;">
+        ← Back to Profile
+      </button>
+    </div>
+    
+    <h3 style="text-align: center; margin-bottom: 16px;">Edit Display Name</h3>
+    
+    <form id="display-name-form" style="max-width: 400px; margin: 0 auto;">
+      <div style="margin-bottom: 16px;">
+        <label for="new-display-name" style="display: block; margin-bottom: 8px; font-weight: 600;">
+          Display Name
+        </label>
+        <input type="text" 
+               id="new-display-name" 
+               value="${currentName}"
+               placeholder="Enter display name"
+               maxlength="50"
+               style="width: 100%; max-width: 100%;"
+               required>
+        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 4px;">
+          This is how other players will see you
+        </p>
+      </div>
+      
+      <div id="display-name-error" class="error-message hidden"></div>
+      
+      <button type="submit" style="width: 100%;">
+        💾 Save Display Name
+      </button>
+    </form>
+  `;
+  
+  container.innerHTML = content;
+  
+  // Attach form handler
+  setTimeout(() => {
+    document.getElementById('display-name-form').onsubmit = async (e) => {
+      e.preventDefault();
+      
+      const newName = document.getElementById('new-display-name').value.trim();
+      const errorEl = document.getElementById('display-name-error');
+      
+      if (!newName) {
+        errorEl.textContent = 'Display name cannot be empty';
+        errorEl.classList.remove('hidden');
+        return;
+      }
+      
+      if (newName.length < 2) {
+        errorEl.textContent = 'Display name must be at least 2 characters';
+        errorEl.classList.remove('hidden');
+        return;
+      }
+      
+      try {
+        await authManager.updateProfile({ displayName: newName });
+        
+        // Update Firebase Auth profile as well
+        if (userState.currentUser && !userState.isAnonymous) {
+          await userState.currentUser.updateProfile({ displayName: newName });
+        }
+        
+        utils.showNotification('✅ Display name updated!');
+        await loadProfileContent();
+      } catch (error) {
+        console.error('Error saving display name:', error);
+        errorEl.textContent = 'Failed to update display name';
+        errorEl.classList.remove('hidden');
+      }
+    };
+  }, 100);
+}
+
+async function showStats() {
+  if (!userState.userId) {
+    authManager.showAuthModal('login');
+    return;
+  }
+  
+  modalManager.show('stats-modal');
+  await showStatsTab('personal');
+}
+
+async function showStatsTab(tab) {
+  // Update tab styling
+  document.querySelectorAll('.stats-tab').forEach(btn => {
+    btn.classList.remove('active');
+  });
+  document.getElementById(`stats-tab-${tab}`).classList.add('active');
+  
+  const container = document.getElementById('stats-tab-content');
+  container.innerHTML = '<div class="loading-indicator">Loading...</div>';
+  
+  try {
+    switch(tab) {
+      case 'personal':
+        await loadPersonalStats(container);
+        break;
+      case 'partners':
+        await loadPartnersStats(container);
+        break;
+      case 'global':
+        await loadGlobalLeaderboard(container);
+        break;
+      case 'history':
+        await loadGameHistory(container);
+        break;
+    }
+  } catch (error) {
+    console.error('Error loading stats tab:', error);
+    container.innerHTML = '<div class="error-message">Failed to load stats. Please try again.</div>';
+  }
+}
+
+async function loadPersonalStats(container) {
+  const stats = await statsManager.getPersonalStats();
+  
+  if (!stats) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state-icon">📊</div>
+        <div class="empty-state-text">No stats yet</div>
+        <div class="empty-state-subtext">Play some games to see your stats here!</div>
+      </div>
+    `;
+    return;
+  }
+  
+  const myRank = await statsManager.getMyRank();
+  
+  let content = `
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-value">${stats.totalGames}</div>
+        <div class="stat-label">Total Games</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">${stats.totalWins}</div>
+        <div class="stat-label">Wins (≥70%)</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">${stats.winRate}%</div>
+        <div class="stat-label">Win Rate</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">${stats.averageScore}%</div>
+        <div class="stat-label">Average Score</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">${stats.bestScore}%</div>
+        <div class="stat-label">Best Score</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">${stats.currentStreak}🔥</div>
+        <div class="stat-label">Current Streak</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">${stats.longestStreak}🔥</div>
+        <div class="stat-label">Longest Streak</div>
+      </div>
+      ${myRank ? `
+        <div class="stat-card">
+          <div class="stat-value">#${myRank}</div>
+          <div class="stat-label">Global Rank</div>
+        </div>
+      ` : ''}
+    </div>
+    
+    ${stats.lastPlayed ? `
+      <p style="text-align: center; margin-top: 20px; color: var(--text-secondary); font-size: 0.9rem;">
+        Last played: ${formatDate(stats.lastPlayed)}
+      </p>
+    ` : ''}
+  `;
+  
+  container.innerHTML = content;
+}
+
+async function loadPartnersStats(container) {
+  const partners = await statsManager.getGamePartners();
+  
+  if (!partners || partners.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state-icon">🤝</div>
+        <div class="empty-state-text">No game partners yet</div>
+        <div class="empty-state-subtext">Play games with friends to see your partnerships here!</div>
+      </div>
+    `;
+    return;
+  }
+  
+  let content = '<div>';
+  
+  partners.forEach(partner => {
+    const compatibilityScore = Math.round((partner.myAvgScore + partner.theirAvgScore) / 2);
+    const badge = partner.gamesPlayed >= 10 ? '🏆 Regular Partner' : 
+                  partner.gamesPlayed >= 5 ? '⭐ Frequent' : 
+                  '🎮 New Partner';
+    
+    content += `
+      <div class="partner-card" onclick="showPartnershipDetails('${partner.partnerId}', '${partner.name}')">
+        <div class="partner-info">
+          <div class="partner-name">👥 ${partner.name}</div>
+          <div class="partner-stats">
+            ${partner.gamesPlayed} games played | 
+            You: ${partner.myAvgScore}% | 
+            Them: ${partner.theirAvgScore}% | 
+            Compatibility: ${compatibilityScore}%
+          </div>
+          <div style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 4px;">
+            Last played: ${formatDate(partner.lastPlayed)}
+          </div>
+        </div>
+        <div class="partner-badge">${badge}</div>
+      </div>
+    `;
+  });
+  
+  content += '</div>';
+  container.innerHTML = content;
+}
+
+async function showPartnershipDetails(partnerId, partnerName) {
+  const container = document.getElementById('stats-tab-content');
+  container.innerHTML = '<div class="loading-indicator">Loading partnership details...</div>';
+  
+  try {
+    const partnership = await statsManager.getPartnershipDetails(partnerId);
+    
+    if (!partnership) {
+      container.innerHTML = '<div class="error-message">Partnership data not found.</div>';
+      return;
+    }
+    
+    const myId = userState.userId;
+    const scores = partnership.scores || [];
+    const recentGames = scores.slice(-10).reverse();
+    
+    const myTotalScore = scores.reduce((sum, s) => sum + (s[myId] || 0), 0);
+    const theirTotalScore = scores.reduce((sum, s) => sum + (s[partnerId] || 0), 0);
+    const myAvg = Math.round(myTotalScore / scores.length);
+    const theirAvg = Math.round(theirTotalScore / scores.length);
+    
+    let content = `
+      <div style="text-align: center; margin-bottom: 20px;">
+        <button onclick="showStatsTab('partners')" style="font-size: 0.9rem;">
+          ← Back to Partners
+        </button>
+      </div>
+      
+      <h3 style="text-align: center; margin-bottom: 20px;">
+        Partnership with ${partnerName}
+      </h3>
+      
+      <div class="stats-grid" style="margin-bottom: 24px;">
+        <div class="stat-card">
+          <div class="stat-value">${partnership.gamesPlayed}</div>
+          <div class="stat-label">Games Together</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">${myAvg}%</div>
+          <div class="stat-label">Your Average</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">${theirAvg}%</div>
+          <div class="stat-label">Their Average</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">${Math.round((myAvg + theirAvg) / 2)}%</div>
+          <div class="stat-label">Compatibility</div>
+        </div>
+      </div>
+      
+      <h4 style="margin-bottom: 12px;">Recent Games</h4>
+      <div class="history-timeline">
+        ${recentGames.map((game, index) => {
+          const myScore = game[myId] || 0;
+          const theirScore = game[partnerId] || 0;
+          const isWin = myScore >= 70;
+          
+          return `
+            <div class="history-item">
+              <div class="history-item-header">
+                <span class="history-opponent">Game ${scores.length - index}</span>
+                <span class="history-date">${formatDate(game.timestamp)}</span>
+              </div>
+              <div class="history-scores">
+                <div class="history-score ${isWin ? 'win' : 'loss'}">
+                  You: ${myScore}% ${isWin ? '✅' : ''}
+                </div>
+                <div class="history-score">
+                  Them: ${theirScore}%
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    `;
+    
+    container.innerHTML = content;
+    
+  } catch (error) {
+    console.error('Error loading partnership details:', error);
+    container.innerHTML = '<div class="error-message">Failed to load partnership details.</div>';
+  }
+}
+
+async function loadGlobalLeaderboard(container) {
+  const leaderboard = await statsManager.getGlobalLeaderboard(50);
+  
+  if (!leaderboard || leaderboard.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state-icon">🌍</div>
+        <div class="empty-state-text">No leaderboard data yet</div>
+        <div class="empty-state-subtext">Be the first to play and make it to the top!</div>
+      </div>
+    `;
+    return;
+  }
+  
+  let content = `
+    <div style="overflow-x: auto;">
+      <table class="leaderboard-table">
+        <thead>
+          <tr>
+            <th>Rank</th>
+            <th>Player</th>
+            <th>Avg Score</th>
+            <th>Best Score</th>
+            <th>Games</th>
+          </tr>
+        </thead>
+        <tbody>
+  `;
+  
+  leaderboard.forEach((player, index) => {
+    const rank = index + 1;
+    const isMe = player.userId === userState.userId;
+    const rankClass = rank <= 3 ? `rank-${rank}` : '';
+    
+    content += `
+      <tr class="${isMe ? 'leaderboard-me' : ''}">
+        <td class="leaderboard-rank ${rankClass} ${rank <= 3 ? 'top-3' : ''}">${rank}</td>
+        <td>
+          <span class="leaderboard-avatar">${player.photoURL || '😀'}</span>
+          ${player.displayName || player.username || 'Player'}
+          ${isMe ? '<strong>(You)</strong>' : ''}
+        </td>
+        <td><strong>${player.avgScore}%</strong></td>
+        <td>${player.bestScore}%</td>
+        <td>${player.totalGames}</td>
+      </tr>
+    `;
+  });
+  
+  content += `
+        </tbody>
+      </table>
+    </div>
+  `;
+  
+  container.innerHTML = content;
+}
+
+async function loadGameHistory(container) {
+  const history = await statsManager.getGameHistory(50);
+  
+  if (!history || history.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state-icon">📜</div>
+        <div class="empty-state-text">No game history yet</div>
+        <div class="empty-state-subtext">Your past games will appear here!</div>
+      </div>
+    `;
+    return;
+  }
+  
+  let content = `
+    <div class="history-timeline">
+  `;
+  
+  history.forEach(game => {
+    const isWin = game.myScore >= 70;
+    
+    content += `
+      <div class="history-item">
+        <div class="history-item-header">
+          <span class="history-opponent">vs ${game.opponentName}</span>
+          <span class="history-date">${formatDate(game.timestamp)}</span>
+        </div>
+        <div class="history-scores">
+          <div class="history-score ${isWin ? 'win' : 'loss'}">
+            You: ${game.myScore}% ${isWin ? '✅' : '❌'}
+          </div>
+          ${game.theirScore !== null ? `
+            <div class="history-score">
+              Them: ${game.theirScore}%
+            </div>
+          ` : ''}
+        </div>
+        <div style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 4px;">
+          Room: ${game.roomCode} | Round: ${game.roundNumber || 1}
+        </div>
+      </div>
+    `;
+  });
+  
+  content += '</div>';
+  container.innerHTML = content;
+}
+
+function formatDate(timestamp) {
+  if (!timestamp) return 'Unknown';
+  
+  const date = new Date(timestamp);
+  const now = new Date();
+  const diffMs = now - date;
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+  
+  if (diffMins < 1) return 'Just now';
+  if (diffMins < 60) return `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
+  if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+  if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+  
+  return date.toLocaleDateString('en-US', { 
+    month: 'short', 
+    day: 'numeric', 
+    year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined 
+  });
+}
+
+// ========================================
+// END OF PROFILE & STATS UI FUNCTIONS
+// ========================================
     function showAboutName() {
       modalManager.show('about-name-modal');
     }
@@ -2670,6 +5619,14 @@
     // Event Listeners
     document.addEventListener('DOMContentLoaded', function() {
       themeManager.init();
+
+      // Initialize auth and check for existing session
+      authManager.init().then(() => {
+        // Check if user wants to reconnect to game
+        if (userState.userId) {
+          sessionManager.attemptReconnect();
+        }
+      });
       
       const themeSwitchBtn = document.getElementById('theme-switch');
       if (themeSwitchBtn) {
@@ -2681,6 +5638,11 @@
         aboutBtn.addEventListener('click', showAboutName);
       }
       
+      const profileBtn = document.getElementById('profile-btn');
+    if (profileBtn) {
+      profileBtn.addEventListener('click', showProfile);
+    }
+
       document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
           closeInstructions();
@@ -2741,6 +5703,51 @@
     window.pauseAndEdit = pauseAndEdit;
     window.submitAnswers = submitAnswers;
     window.shareResults = shareResults;
+    window.showProfile = showProfile;
+    window.showStats = showStats;
+    window.showStatsTab = showStatsTab;
+    window.selectAvatar = selectAvatar;
+    window.saveAvatar = saveAvatar;
+    window.showDisplayNameEditor = showDisplayNameEditor;
+    window.showAvatarPicker = showAvatarPicker;
+    window.showPartnershipDetails = showPartnershipDetails;
+    window.formatDate = formatDate;
+
+    async function startNewRound() {
+      if (!gameState.opponentUserId) {
+        utils.showNotification('Cannot start new round - opponent info missing');
+        return;
+      }
+      
+      // Clear previous game data
+      gameState.myScore = null;
+      gameState.myTag = null;
+      gameState.otherScore = null;
+      gameState.otherTag = null;
+      
+      gameState.currentRound++;
+      
+      // Clear old room data for fresh round
+      if (window.db && gameState.roomCode) {
+        await window.db.ref(`rooms/${gameState.roomCode}/questions`).remove();
+        await window.db.ref(`rooms/${gameState.roomCode}/answers`).remove();
+        await window.db.ref(`rooms/${gameState.roomCode}/gameState`).remove();
+      }
+      
+      if (userState.sessionId) {
+        await statsManager.incrementSessionRound(userState.sessionId);
+      }
+      
+      gameManager.showSection('question-setup-section');
+      utils.showNotification(`🔄 Starting Round ${gameState.currentRound}!`);
+    }
+
+    window.showAboutName = showAboutName;
+    window.authManager = authManager;
+    window.statsManager = statsManager;
+    window.modalManager = modalManager;
+    window.startNewRound = startNewRound;
+
   </script>
 </body>
 </html>
