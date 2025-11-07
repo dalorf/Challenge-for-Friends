@@ -310,45 +310,6 @@
       transform: translateY(-1px);
     }
 
-    /* Buttons */
-    button {
-      font-family: var(--font-main);
-      font-size: 1.1rem;
-      border-radius: var(--border-radius);
-      background: var(--color-accent);
-      color: #ffffff;
-      font-weight: 600;
-      border: none;
-      padding: 12px 24px;
-      margin: 8px 6px;
-      cursor: pointer;
-      transition: all var(--timing-medium);
-      letter-spacing: 0.4px;
-      min-height: var(--min-touch-target);
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-    }
-
-    button:hover:not(:disabled) {
-      background: var(--color-accent-hover);
-      transform: translateY(-2px);
-      box-shadow: var(--shadow-medium);
-    }
-
-    button:active:not(:disabled) {
-      transform: translateY(0);
-    }
-
-    button:disabled {
-      background: #cccccc;
-      color: #888888;
-      cursor: not-allowed;
-      transform: none;
-      box-shadow: none;
-    }
-
     /* Cards and Containers */
     .question-block {
       background: var(--bg-card);
@@ -2318,11 +2279,9 @@
     return false;
   }
   
-  // NEVER auto-reconnect - ALWAYS show prompt for user choice
-  // This prevents accidental reconnections on fresh page loads
   console.log('Found session, showing reconnect prompt');
   this.showReconnectPrompt(session);
-  return false; // Don't auto-reconnect
+  return true;
 },
 
 showReconnectPrompt(session) {
@@ -2617,20 +2576,18 @@ async performReconnect(session) {
   // Update UI with user info
   this.updateAuthUI();
   
-  // CRITICAL FIX: ALWAYS show room controls after successful auth
-  // This ensures users can create/join rooms after signing in
-  const authSection = document.getElementById('auth-section');
-  const roomControls = document.getElementById('room-controls');
-  
   // Wait for DOM to be fully ready
   await new Promise(resolve => setTimeout(resolve, 100));
   
-  // Only show room controls if we're on the auth page (not in an active game)
-  if (authSection && !authSection.classList.contains('hidden')) {
+  const authSection = document.getElementById('auth-section');
+  const activeSection = document.querySelector('.section:not(.hidden)');
+  const inActiveGame = activeSection && activeSection.id !== 'auth-section';
+  
+  if (!inActiveGame && authSection) {
     this.showRoomControls();
     console.log('✅ Room controls shown after auth');
   } else {
-    console.log('ℹ️ Skipped showing room controls - user is in active game');
+    console.log('ℹ️ Skipped room controls - user in active game');
   }
   
   // Log for debugging
@@ -2753,26 +2710,6 @@ async performReconnect(session) {
     }
     
     console.log('Room controls hidden');
-  },
-
-  handleNoUser() {
-    // Reset user state
-    Object.assign(userState, {
-      currentUser: null,
-      userId: null,
-      username: null,
-      displayName: null,
-      photoURL: null,
-      isAnonymous: false,
-      stats: null
-    });
-    
-    // Hide profile button
-    const profileBtn = document.getElementById('profile-btn');
-    if (profileBtn) profileBtn.classList.add('hidden');
-    
-    // IMPORTANT: Hide room controls and show auth prompt
-    this.hideRoomControls();
   },
 
   async createUserProfile(user) {
@@ -4571,11 +4508,13 @@ try {
     // Show checking status (visual feedback for network operation)
     utils.showSuccess('room-error', `🔍 Checking room "${roomCode}"...`);
 
-    // 2.1.5 Check if player was permanently rejected from this room
-    const rejectionSnapshot = await window.db.ref(`rooms/${roomCode}/rejections/${playerName}`).once('value');
-    const rejection = rejectionSnapshot.val();
+    // 2.1.5 Check if player was permanently rejected from this room (with error handling)
+    try {
+      const rejectionSnapshot = await window.db.ref(`rooms/${roomCode}/rejections/${playerName}`).once('value');
+      const rejection = rejectionSnapshot.val();
     
     if (rejection && rejection.permanent) {
+
       utils.showError('room-error', 
         `🚫 You have been blocked from joining room "${roomCode}".\n\n` +
         `Please try a different room code or create your own room.`
@@ -4602,6 +4541,9 @@ try {
         joinBtn.textContent = originalText;
         return;
       }
+    }
+    } catch (rejectionError) {
+      console.warn('Could not check rejection status:', rejectionError);
     }
 
     // 2.2 CRITICAL: Check if room exists FIRST (before any other DB operations)
@@ -6904,12 +6846,7 @@ function formatDate(timestamp) {
       }
     }
 
-    window.showAboutName = showAboutName;
-    window.authManager = authManager;
-    window.statsManager = statsManager;
-    window.modalManager = modalManager;
-    window.startNewRound = startNewRound;
-    window.showAboutName = showAboutName;
+   window.showAboutName = showAboutName;
     window.authManager = authManager;
     window.statsManager = statsManager;
     window.modalManager = modalManager;
