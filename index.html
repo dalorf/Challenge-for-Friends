@@ -1919,6 +1919,34 @@
       </div>
     </section>
 
+    <section id="join-request-section" class="section hidden" aria-labelledby="join-request-heading">
+      <h3 id="join-request-heading">Waiting for Player</h3>
+      
+      <div class="room-info" style="margin-bottom: 24px;">
+        <p style="margin: 0;">🎮 Room Code: <strong id="waiting-room-code"></strong></p>
+        <p style="margin: 8px 0 0 0; font-size: 0.9rem; opacity: 0.8;">Share this code with your friend</p>
+      </div>
+      
+      <div style="text-align: center; margin-bottom: 24px;">
+        <div class="loading-indicator" style="margin-bottom: 16px;">
+          ⏳ Waiting for someone to join...
+        </div>
+        <p style="font-size: 0.85rem; color: var(--text-secondary);">
+          Time waiting: <span id="wait-duration" class="timer">0:00</span>
+        </p>
+      </div>
+      
+      <div id="join-requests-container" style="max-width: 500px; margin: 0 auto;">
+        <!-- Join requests will appear here -->
+      </div>
+      
+      <div style="text-align: center; margin-top: 24px;">
+        <button onclick="cancelRoom()" style="background: #ef5350;">
+          ❌ Cancel Room
+        </button>
+      </div>
+    </section>
+
     <section id="question-setup-section" class="section hidden" aria-labelledby="setup-heading">
       <h3 id="setup-heading">Game Setup</h3>
       <div class="question-count-selector">
@@ -1932,6 +1960,35 @@
         </select>
         <br><br>
         <button onclick="startGameSetup()" id="start-setup-btn">Start Creating Questions</button>
+      </div>
+    </section>
+
+    <section id="waiting-acceptance-section" class="section hidden" aria-labelledby="acceptance-heading">
+      <h3 id="acceptance-heading">Join Request Sent</h3>
+      
+      <div class="room-info" style="margin-bottom: 24px;">
+        <p style="margin: 0;">🎮 Room Code: <strong id="acceptance-room-code"></strong></p>
+      </div>
+      
+      <div style="text-align: center; margin-bottom: 24px;">
+        <div class="loading-indicator" style="margin-bottom: 16px;">
+          ⏳ Waiting for <strong id="acceptance-host-name"></strong> to accept your request...
+        </div>
+        <p style="font-size: 0.85rem; color: var(--text-secondary);">
+          Time waiting: <span id="acceptance-duration" class="timer">0:00</span>
+        </p>
+      </div>
+      
+      <div id="acceptance-status" style="max-width: 500px; margin: 0 auto; text-align: center;">
+        <p style="font-size: 0.95rem; opacity: 0.8;">
+          The room creator will review your request shortly
+        </p>
+      </div>
+      
+      <div style="text-align: center; margin-top: 24px;">
+        <button onclick="cancelJoinRequest()" style="background: #6B7280;">
+          ← Back to Join
+        </button>
       </div>
     </section>
 
@@ -4282,14 +4339,20 @@ try {
       createdAt: Date.now(),
       sessionId: sessionId,
       creatorUserId: userState.userId || null,
-      roomCode: gameState.roomCode // Store for reference
+      roomCode: gameState.roomCode,
+      roomStatus: 'waiting_for_player', // NEW: Track room status
+      createdTimestamp: Date.now() // NEW: For timeout tracking
     });
+    
+    // NEW: Initialize empty join requests node
+    await window.db.ref(`rooms/${gameState.roomCode}/joinRequests`).set({});
     
     // Update game state
     await dbManager.updateGameState(GAME_STATES.SETUP);
     
     // Set up listeners
     dbManager.listenForGameStateChanges();
+    gameManager.listenForJoinRequests(); // NEW: Listen for join requests
     
     // Update room info display
     dbManager.updateRoomInfo();
@@ -4323,8 +4386,19 @@ try {
       }, 1000);
     }
     
-    // Move to question setup
-    this.showSection('question-setup-section');
+   // Move to join request waiting screen
+    this.showSection('join-request-section');
+    document.getElementById('waiting-room-code').textContent = gameState.roomCode;
+    gameManager.startWaitingTimer('wait-duration');
+    
+    // Set up auto-timeout for room (2 minutes)
+    gameState.roomTimeout = setTimeout(() => {
+      const container = document.getElementById('join-requests-container');
+      if (container && container.children.length === 0) {
+        utils.showNotification('⏰ Room timed out - No one joined', 6000);
+        setTimeout(() => location.reload(), 2000);
+      }
+    }, 120000); // 2 minutes
     
     console.log('✅ Room created successfully:', {
       code: gameState.roomCode,
@@ -4497,6 +4571,39 @@ try {
     // Show checking status (visual feedback for network operation)
     utils.showSuccess('room-error', `🔍 Checking room "${roomCode}"...`);
 
+    // 2.1.5 Check if player was permanently rejected from this room
+    const rejectionSnapshot = await window.db.ref(`rooms/${roomCode}/rejections/${playerName}`).once('value');
+    const rejection = rejectionSnapshot.val();
+    
+    if (rejection && rejection.permanent) {
+      utils.showError('room-error', 
+        `🚫 You have been blocked from joining room "${roomCode}".\n\n` +
+        `Please try a different room code or create your own room.`
+      );
+      roomCodeInput.focus();
+      roomCodeInput.select();
+      roomCodeInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      joinBtn.disabled = false;
+      if (createBtn) createBtn.disabled = false;
+      joinBtn.textContent = originalText;
+      return;
+    }
+    
+    // Check if player needs to wait before retrying
+    if (rejection && !rejection.permanent && rejection.canRetryAfter) {
+      const waitTime = rejection.canRetryAfter - Date.now();
+      if (waitTime > 0) {
+        const seconds = Math.ceil(waitTime / 1000);
+        utils.showError('room-error', 
+          `⏸️ Please wait ${seconds} second${seconds > 1 ? 's' : ''} before trying to join again.`
+        );
+        joinBtn.disabled = false;
+        if (createBtn) createBtn.disabled = false;
+        joinBtn.textContent = originalText;
+        return;
+      }
+    }
+
     // 2.2 CRITICAL: Check if room exists FIRST (before any other DB operations)
     const roomSnapshot = await window.db.ref(`rooms/${roomCode}/settings`).once('value');
     
@@ -4632,33 +4739,44 @@ try {
     gameState.playerName = playerName;
     gameState.roomCode = roomCode;
     
-    // ===== PHASE 4: JOIN SUCCESSFUL - PROCEED WITH GAME SETUP =====
+    // ===== PHASE 4: JOIN SUCCESSFUL - SEND JOIN REQUEST =====
     
-    // 4.1 Add player to session if exists (for stats tracking)
-    if (roomSettings.sessionId && userState.userId && !userState.isAnonymous) {
-      try {
-        await statsManager.addPlayerToSession(roomSettings.sessionId, userState.userId);
-        console.log('✅ Added to session:', roomSettings.sessionId);
-      } catch (error) {
-        console.warn('Failed to add to session (non-critical):', error);
-      }
+    // 4.1 Check if room is still accepting players
+    if (roomSettings.roomStatus === 'game_started') {
+      utils.showError('room-error', '❌ This game has already started. Please create a new room.');
+      joinBtn.disabled = false;
+      if (createBtn) createBtn.disabled = false;
+      joinBtn.textContent = originalText;
+      return;
     }
     
-    // 4.2 Update game state in Firebase
-    await dbManager.updateGameState(GAME_STATES.SETUP);
+    // 4.2 Send join request to room
+    console.log('📤 Sending join request to room:', roomCode);
     
-    // 4.3 Set up real-time listeners for game updates
-    dbManager.listenForGameStateChanges();
+    const joinRequestData = {
+      playerName: playerName,
+      userId: userState.userId || null,
+      timestamp: Date.now(),
+      rejectedOnce: false // Track if they've been rejected before
+    };
     
-    // 4.4 Update room info display
+    await window.db.ref(`rooms/${roomCode}/joinRequests/${playerName}`).set(joinRequestData);
+    
+    // 4.3 Show waiting for acceptance screen
+    this.showSection('waiting-acceptance-section');
+    document.getElementById('acceptance-room-code').textContent = roomCode;
+    document.getElementById('acceptance-host-name').textContent = roomSettings.creator || 'host';
+    gameManager.startWaitingTimer('acceptance-duration');
+    
+    // 4.4 Listen for acceptance/rejection
+    gameManager.listenForJoinResponse(playerName, roomCode);
+    
+    // 4.5 Update room info display (but don't save session yet - wait for acceptance)
     dbManager.updateRoomInfo();
     
-    // 4.5 Save session for reconnection capability
-    sessionManager.saveSession();
-    
     // 4.6 Show success message
-    utils.showSuccess('room-error', `✅ Successfully joined room: ${gameState.roomCode}`);
-    utils.announceToScreenReader(`Joined room ${gameState.roomCode}`);
+    utils.showSuccess('room-error', `📤 Join request sent to ${roomSettings.creator || 'host'}`);
+    utils.announceToScreenReader(`Join request sent, waiting for acceptance`);
     
     // 4.7 Determine next screen based on game state
     if (roomSettings.requiredQuestionCount && roomSettings.requiredQuestionCount > 0) {
@@ -5552,6 +5670,232 @@ if (currentCount >= gameState.requiredQuestionCount * APP_CONFIG.MAX_QUESTIONS_M
               .catch(err => console.error("Failed to clean up game room:", err));
           }, APP_CONFIG.CLEANUP_DELAY_MS);
         }
+      },
+
+      listenForJoinRequests() {
+        if (!window.db || !gameState.roomCode) return;
+        
+        const joinRequestsRef = window.db.ref(`rooms/${gameState.roomCode}/joinRequests`);
+        
+        joinRequestsRef.on('child_added', (snapshot) => {
+          const requestData = snapshot.val();
+          const playerName = snapshot.key;
+          
+          // Don't show our own request
+          if (playerName === gameState.playerName) return;
+          
+          this.displayJoinRequest(playerName, requestData);
+        });
+        
+        joinRequestsRef.on('child_removed', (snapshot) => {
+          const playerName = snapshot.key;
+          this.removeJoinRequestUI(playerName);
+        });
+        
+        // Store reference for cleanup
+        gameState.joinRequestsListener = joinRequestsRef;
+      },
+
+      displayJoinRequest(playerName, requestData) {
+        const container = document.getElementById('join-requests-container');
+        
+        // Check if already displayed
+        if (document.getElementById(`join-request-${playerName}`)) return;
+        
+        const requestDiv = document.createElement('div');
+        requestDiv.id = `join-request-${playerName}`;
+        requestDiv.className = 'notification';
+        requestDiv.style.cssText = 'margin-bottom: 16px; text-align: left; animation: slideIn 0.4s ease;';
+        
+        const timeAgo = Math.floor((Date.now() - requestData.timestamp) / 1000);
+        const timeText = timeAgo < 5 ? 'Just now' : `${timeAgo}s ago`;
+        
+        requestDiv.innerHTML = `
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+            <div style="flex: 1; min-width: 150px;">
+              <div style="font-size: 1.1rem; font-weight: 700; margin-bottom: 4px;">
+                👤 ${playerName}
+              </div>
+              <div style="font-size: 0.85rem; opacity: 0.8;">
+                Requested ${timeText}
+              </div>
+              ${requestData.rejectedOnce ? '<div style="font-size: 0.8rem; color: #ff9800; margin-top: 4px;">⚠️ Previously rejected</div>' : ''}
+            </div>
+            <div style="display: flex; gap: 8px;">
+              <button onclick="acceptPlayer('${playerName}')" 
+                      style="background: #10B981; padding: 8px 16px; font-size: 0.9rem;">
+                ✅ Accept
+              </button>
+              <button onclick="rejectPlayer('${playerName}')" 
+                      style="background: #ef5350; padding: 8px 16px; font-size: 0.9rem;">
+                ❌ Reject
+              </button>
+            </div>
+          </div>
+        `;
+        
+        container.appendChild(requestDiv);
+        utils.announceToScreenReader(`Join request from ${playerName}`);
+      },
+
+      removeJoinRequestUI(playerName) {
+        const requestDiv = document.getElementById(`join-request-${playerName}`);
+        if (requestDiv) {
+          requestDiv.style.animation = 'fadeOut 0.3s ease';
+          setTimeout(() => requestDiv.remove(), 300);
+        }
+      },
+
+      startWaitingTimer(elementId) {
+        const startTime = Date.now();
+        const timerEl = document.getElementById(elementId);
+        
+        const updateTimer = () => {
+          if (!timerEl || timerEl.offsetParent === null) return; // Stop if element hidden
+          
+          const elapsed = Date.now() - startTime;
+          const minutes = Math.floor(elapsed / 60000);
+          const seconds = Math.floor((elapsed % 60000) / 1000);
+          timerEl.textContent = `${minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
+          
+          setTimeout(updateTimer, 1000);
+        };
+        
+        updateTimer();
+      },
+
+      listenForRoomUpdates() {
+        if (!window.db || !gameState.roomCode) return;
+        
+        const settingsRef = window.db.ref(`rooms/${gameState.roomCode}/settings`);
+        
+        const settingsListener = settingsRef.on('value', (snapshot) => {
+          const settings = snapshot.val();
+          
+          if (!settings) return;
+          
+          // Check if question count has been set
+          if (settings.requiredQuestionCount && settings.requiredQuestionCount > 0) {
+            gameState.requiredQuestionCount = settings.requiredQuestionCount;
+            
+            // Remove listener
+            settingsRef.off('value', settingsListener);
+            
+            // Move to question mode
+            this.enterQuestionMode();
+            utils.showNotification(`🎯 Game setup complete! ${settings.requiredQuestionCount} questions per player`);
+          }
+        });
+      },
+
+      listenForJoinResponse(playerName, roomCode) {
+        if (!window.db) return;
+        
+        // Listen for acceptance
+        const acceptanceRef = window.db.ref(`rooms/${roomCode}/acceptances/${playerName}`);
+        const acceptanceListener = acceptanceRef.on('value', (snapshot) => {
+          const acceptance = snapshot.val();
+          
+          if (acceptance && acceptance.accepted) {
+            // Clean up listeners
+            acceptanceRef.off('value', acceptanceListener);
+            if (gameState.rejectionListener) {
+              gameState.rejectionListener.off();
+            }
+            
+            // Update game state
+            dbManager.updateGameState(GAME_STATES.SETUP);
+            dbManager.listenForGameStateChanges();
+            
+            // Save session
+            sessionManager.saveSession();
+            
+            utils.showNotification('✅ Join request accepted! Waiting for game setup...');
+            utils.announceToScreenReader('Join request accepted');
+            
+            // Show waiting or question setup based on room settings
+            this.showSection('waiting-section');
+            document.getElementById('waiting-section').innerHTML = 
+              '<div class="loading-indicator">⏳ Waiting for host to configure game...</div>';
+            this.listenForRoomUpdates();
+          }
+        });
+        
+        // Listen for rejection
+        const rejectionRef = window.db.ref(`rooms/${roomCode}/rejections/${playerName}`);
+        const rejectionListener = rejectionRef.on('value', (snapshot) => {
+          const rejection = snapshot.val();
+          
+          if (rejection && rejection.rejected) {
+            // Clean up listeners
+            rejectionRef.off('value', rejectionListener);
+            acceptanceRef.off('value', acceptanceListener);
+            
+            // Remove join request
+            window.db.ref(`rooms/${roomCode}/joinRequests/${playerName}`).remove();
+            
+            if (rejection.permanent) {
+              // Permanent rejection
+              utils.showError('room-error', 
+                `❌ Your join request was rejected.\n\n` +
+                `You cannot join this room. Please create a new room or try a different code.`
+              );
+              
+              // Clear state
+              gameState.playerName = null;
+              gameState.roomCode = null;
+              sessionManager.clearSession();
+              
+              // Return to auth section
+              setTimeout(() => {
+                this.showSection('auth-section');
+              }, 100);
+              
+            } else {
+              // Temporary rejection - can retry
+              const canRetryIn = rejection.canRetryAfter ? Math.ceil((rejection.canRetryAfter - Date.now()) / 1000) : 10;
+              
+              utils.showError('room-error', 
+                `⏸️ Your join request was not accepted.\n\n` +
+                `You can try joining again in ${canRetryIn} seconds.`
+              );
+              
+              // Clear state but allow retry
+              gameState.roomCode = null;
+              document.getElementById('roomCode').value = roomCode; // Keep code for retry
+              
+              // Return to auth section
+              setTimeout(() => {
+                this.showSection('auth-section');
+              }, 100);
+            }
+          }
+        });
+        
+        // Store listeners for cleanup
+        gameState.joinResponseListener = acceptanceRef;
+        gameState.rejectionListener = rejectionRef;
+        
+        // Set timeout for join request (2 minutes)
+        gameState.joinRequestTimeout = setTimeout(() => {
+          // Check if still waiting
+          const statusDiv = document.getElementById('acceptance-status');
+          if (statusDiv && !statusDiv.classList.contains('hidden')) {
+            acceptanceRef.off('value', acceptanceListener);
+            rejectionRef.off('value', rejectionListener);
+            
+            utils.showNotification('⏰ Join request timed out. Please try again.');
+            
+            // Clean up
+            window.db.ref(`rooms/${roomCode}/joinRequests/${playerName}`).remove();
+            gameState.playerName = null;
+            gameState.roomCode = null;
+            
+            setTimeout(() => {
+              this.showSection('auth-section');
+            }, 1500);
+          }
+        }, 120000); // 2 minutes
       }
     };
 
@@ -6565,6 +6909,220 @@ function formatDate(timestamp) {
     window.statsManager = statsManager;
     window.modalManager = modalManager;
     window.startNewRound = startNewRound;
+    window.showAboutName = showAboutName;
+    window.authManager = authManager;
+    window.statsManager = statsManager;
+    window.modalManager = modalManager;
+    window.startNewRound = startNewRound;
+
+    async function acceptPlayer(playerName) {
+      if (!window.db || !gameState.roomCode) return;
+      
+      try {
+        // Disable all accept/reject buttons
+        const buttons = document.querySelectorAll('#join-requests-container button');
+        buttons.forEach(btn => btn.disabled = true);
+        
+        utils.showNotification(`✅ Accepting ${playerName}...`);
+        
+        // 1. Update room settings to mark as game starting
+        await window.db.ref(`rooms/${gameState.roomCode}/settings`).update({
+          roomStatus: 'game_started',
+          acceptedPlayer: playerName,
+          acceptedAt: Date.now()
+        });
+        
+        // 2. Remove the join request
+        await window.db.ref(`rooms/${gameState.roomCode}/joinRequests/${playerName}`).remove();
+        
+        // 3. Notify accepted player by creating acceptance node
+        await window.db.ref(`rooms/${gameState.roomCode}/acceptances/${playerName}`).set({
+          accepted: true,
+          timestamp: Date.now()
+        });
+        
+        // 4. Clear room timeout
+        if (gameState.roomTimeout) {
+          clearTimeout(gameState.roomTimeout);
+        }
+        
+        // 5. Set the other player name
+        gameState.otherPlayerName = playerName;
+        
+        // 6. Try to get opponent's userId for stats tracking
+        if (!gameState.opponentUserId) {
+          const userId = await statsManager.getUserIdByName(playerName);
+          if (userId) {
+            gameState.opponentUserId = userId;
+            gameState.opponentName = playerName;
+          }
+        }
+        
+        // 7. Add to session if exists
+        const settingsSnapshot = await window.db.ref(`rooms/${gameState.roomCode}/settings`).once('value');
+        const settings = settingsSnapshot.val();
+        if (settings.sessionId && userState.userId && !userState.isAnonymous) {
+          try {
+            await statsManager.addPlayerToSession(settings.sessionId, userState.userId);
+          } catch (error) {
+            console.warn('Failed to add to session:', error);
+          }
+        }
+        
+        // 8. Update room info
+        dbManager.updateRoomInfo();
+        
+        // 9. Save session
+        sessionManager.saveSession();
+        
+        utils.showNotification(`✅ ${playerName} accepted! Setting up game...`);
+        
+        // 10. Move to question setup
+        setTimeout(() => {
+          gameManager.showSection('question-setup-section');
+        }, 1000);
+        
+      } catch (error) {
+        console.error('Error accepting player:', error);
+        utils.showNotification('❌ Failed to accept player. Please try again.');
+        // Re-enable buttons
+        const buttons = document.querySelectorAll('#join-requests-container button');
+        buttons.forEach(btn => btn.disabled = false);
+      }
+    }
+
+    async function rejectPlayer(playerName) {
+      if (!window.db || !gameState.roomCode) return;
+      
+      const confirmed = confirm(`Reject ${playerName}?\n\nThey will be able to try joining once more.`);
+      if (!confirmed) return;
+      
+      try {
+        // Disable buttons
+        const buttons = document.querySelectorAll('#join-requests-container button');
+        buttons.forEach(btn => btn.disabled = true);
+        
+        utils.showNotification(`❌ Rejecting ${playerName}...`);
+        
+        // 1. Check if already rejected once
+        const requestSnapshot = await window.db.ref(`rooms/${gameState.roomCode}/joinRequests/${playerName}`).once('value');
+        const requestData = requestSnapshot.val();
+        
+        if (requestData && requestData.rejectedOnce) {
+          // Second rejection - permanent
+          await window.db.ref(`rooms/${gameState.roomCode}/rejections/${playerName}`).set({
+            rejected: true,
+            permanent: true,
+            timestamp: Date.now()
+          });
+          
+          utils.showNotification(`🚫 ${playerName} permanently rejected from this room`);
+        } else {
+          // First rejection - can try again
+          await window.db.ref(`rooms/${gameState.roomCode}/rejections/${playerName}`).set({
+            rejected: true,
+            permanent: false,
+            timestamp: Date.now(),
+            canRetryAfter: Date.now() + 10000 // 10 seconds cooldown
+          });
+          
+          // Mark as rejected once
+          await window.db.ref(`rooms/${gameState.roomCode}/joinRequests/${playerName}`).update({
+            rejectedOnce: true
+          });
+          
+          utils.showNotification(`⏸️ ${playerName} rejected - they can retry after 10 seconds`);
+        }
+        
+        // 2. Remove the join request UI
+        gameManager.removeJoinRequestUI(playerName);
+        
+        // 3. Remove from requests after short delay
+        setTimeout(async () => {
+          await window.db.ref(`rooms/${gameState.roomCode}/joinRequests/${playerName}`).remove();
+        }, 1000);
+        
+      } catch (error) {
+        console.error('Error rejecting player:', error);
+        utils.showNotification('❌ Failed to reject player. Please try again.');
+        // Re-enable buttons
+        const buttons = document.querySelectorAll('#join-requests-container button');
+        buttons.forEach(btn => btn.disabled = false);
+      }
+    }
+
+    async function cancelRoom() {
+      const confirmed = confirm('Cancel this room?\n\nThe room will be deleted and you\'ll return to the start.');
+      if (!confirmed) return;
+      
+      try {
+        // Clear timeout
+        if (gameState.roomTimeout) {
+          clearTimeout(gameState.roomTimeout);
+        }
+        
+        // Clean up listeners
+        if (gameState.joinRequestsListener) {
+          gameState.joinRequestsListener.off();
+        }
+        
+        // Delete room
+        if (window.db && gameState.roomCode) {
+          await window.db.ref(`rooms/${gameState.roomCode}`).remove();
+        }
+        
+        // Clear session
+        sessionManager.clearSession();
+        
+        utils.showNotification('❌ Room cancelled');
+        
+        // Reload page
+        setTimeout(() => location.reload(), 1000);
+        
+      } catch (error) {
+        console.error('Error cancelling room:', error);
+        utils.showNotification('Failed to cancel room properly. Reloading...');
+        setTimeout(() => location.reload(), 1500);
+      }
+    }
+
+    async function cancelJoinRequest() {
+      if (!window.db || !gameState.roomCode || !gameState.playerName) {
+        location.reload();
+        return;
+      }
+      
+      try {
+        // Remove join request
+        await window.db.ref(`rooms/${gameState.roomCode}/joinRequests/${gameState.playerName}`).remove();
+        
+        // Stop listening
+        if (gameState.joinResponseListener) {
+          gameState.joinResponseListener.off();
+        }
+        
+        // Clear game state
+        gameState.playerName = null;
+        gameState.roomCode = null;
+        
+        // Clear session
+        sessionManager.clearSession();
+        
+        utils.showNotification('❌ Join request cancelled');
+        
+        // Return to auth section
+        gameManager.showSection('auth-section');
+        
+      } catch (error) {
+        console.error('Error cancelling join request:', error);
+        location.reload();
+      }
+    }
+
+    window.acceptPlayer = acceptPlayer;
+    window.rejectPlayer = rejectPlayer;
+    window.cancelRoom = cancelRoom;
+    window.cancelJoinRequest = cancelJoinRequest;
 
     function copyRoomCode() {
   navigator.clipboard.writeText(gameState.roomCode).then(() => {
