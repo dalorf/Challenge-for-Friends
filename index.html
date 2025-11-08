@@ -2269,6 +2269,15 @@
   const session = this.loadSession();
   if (!session) return false;
   
+  // ⚠️ Safety check: Don't show reconnect if user is trying to join a different room
+  const urlParams = new URLSearchParams(window.location.search);
+  const urlRoom = urlParams.get('room');
+  if (urlRoom && urlRoom.toUpperCase() !== session.roomCode) {
+    console.log('User trying to join different room - skipping reconnect');
+    this.clearSession();
+    return false;
+  }
+  
   // Check session age
   const sessionAge = Date.now() - session.timestamp;
   
@@ -4167,7 +4176,13 @@ async performReconnect(session) {
     };
 
     const gameManager = {
-      async createRoom() {
+     async createRoom() {
+  // Add this at the very beginning:
+  if (!window.dalorfInitialized) {
+    utils.showError('room-error', '⏳ Please wait, page is still loading...');
+    return;
+  }
+  
   const createBtn = document.querySelector('button[onclick="createRoom()"]');
   const joinBtn = document.querySelector('button[onclick="joinRoom()"]');
   
@@ -4178,18 +4193,29 @@ async performReconnect(session) {
   
   const originalText = createBtn.textContent;
   
-  // Disable BOTH buttons during creation to prevent double-submission
+  // Disable BOTH buttons during creation
   createBtn.disabled = true;
   if (joinBtn) joinBtn.disabled = true;
   createBtn.textContent = 'Creating...';
   
   const playerNameInput = document.getElementById('playerName');
-  let roomCodeInput = document.getElementById('roomCode');
+  const roomCodeInput = document.getElementById('roomCode'); // ← Change from 'let' to 'const'
   
+  // Add this check right here:
+  if (!playerNameInput || !roomCodeInput) {
+    console.error('Required input elements not found');
+    createBtn.disabled = false;
+    if (joinBtn) joinBtn.disabled = false;
+    createBtn.textContent = originalText;
+    utils.showError('room-error', '❌ Page not fully loaded. Please refresh and try again.');
+    return;
+  }
   
-  // Get and sanitize inputs
+ // Get and sanitize inputs
   const playerName = utils.sanitizeInput(playerNameInput.value, APP_CONFIG.MAX_NAME_LENGTH);
   const customCode = utils.sanitizeInput(roomCodeInput.value, APP_CONFIG.MAX_ROOM_CODE_LENGTH).toUpperCase();
+  
+  // ... rest of your code
   
   // ===== VALIDATION IN CORRECT ORDER =====
   
@@ -4424,6 +4450,8 @@ try {
   // Get and sanitize inputs
   const playerName = utils.sanitizeInput(playerNameInput.value, APP_CONFIG.MAX_NAME_LENGTH);
   const roomCode = utils.sanitizeInput(roomCodeInput.value, APP_CONFIG.MAX_ROOM_CODE_LENGTH).toUpperCase();
+  
+  // ❌ DO NOT SET gameState HERE - we haven't validated the room exists yet!
   
   // ===== PHASE 1: CLIENT-SIDE VALIDATION (Fast fails, no DB calls) =====
   
@@ -4674,9 +4702,9 @@ try {
       console.log('✅ Room has space - proceeding with join');
     }
     
-    // ===== PHASE 3: ALL VALIDATION PASSED - SET GAME STATE =====
-    // This is the ONLY place we set gameState - after all checks pass
-    console.log('✅ All validation passed - setting game state');
+    // ===== PHASE 3: ALL VALIDATION PASSED - NOW SET GAME STATE =====
+    // ⚠️ CRITICAL: Only set gameState AFTER all validation passes
+    console.log('✅ All validation passed - setting game state NOW');
     
     gameState.playerName = playerName;
     gameState.roomCode = roomCode;
@@ -6676,6 +6704,8 @@ function formatDate(timestamp) {
 
       // Initialize auth and check for existing session
       authManager.init().then(() => {
+        // Mark that initialization is complete
+      window.dalorfInitialized = true;
         // Check if user wants to reconnect to game
         if (userState.userId) {
           sessionManager.attemptReconnect();
@@ -6841,6 +6871,36 @@ function formatDate(timestamp) {
       clearInterval(gameState.reviewInterval);
       gameState.reviewInterval = null;
     }
+    
+    // STEP 2.5: Clear UI state (question blocks, timers, messages)
+    const questionsContainer = document.getElementById('questions-container');
+    if (questionsContainer) {
+      questionsContainer.innerHTML = '';
+    }
+    
+    const reviewTimer = document.getElementById('review-timer-visible');
+    if (reviewTimer) {
+      reviewTimer.style.display = 'none';
+      reviewTimer.innerHTML = '';
+    }
+    
+    const questionError = document.getElementById('question-error');
+    if (questionError) {
+      questionError.classList.add('hidden');
+      questionError.textContent = '';
+    }
+    
+    const submitBtn = document.getElementById('submit-btn');
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Submit Questions';
+      submitBtn.style.display = '';
+    }
+    
+    // Clear any edit/delete buttons that might be lingering
+    document.querySelectorAll('.edit-btn, .delete-btn').forEach(btn => btn.remove());
+    
+    console.log('✅ UI state cleared for new round');
     
     // STEP 3: Increment round number
     gameState.currentRound++;
