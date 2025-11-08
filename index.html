@@ -4184,7 +4184,7 @@ async performReconnect(session) {
   createBtn.textContent = 'Creating...';
   
   const playerNameInput = document.getElementById('playerName');
-  const roomCodeInput = document.getElementById('roomCode');
+  let roomCodeInput = document.getElementById('roomCode');
   
   
   // Get and sanitize inputs
