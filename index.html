@@ -4199,7 +4199,7 @@ async performReconnect(session) {
   createBtn.textContent = 'Creating...';
   
   const playerNameInput = document.getElementById('playerName');
-  const roomCodeInput = document.getElementById('roomCode'); // ← Change from 'let' to 'const'
+  let roomCodeInput = document.getElementById('roomCode');
   
   // Add this check right here:
   if (!playerNameInput || !roomCodeInput) {
@@ -6858,7 +6858,10 @@ function formatDate(timestamp) {
       nextRound: gameState.currentRound + 1
     });
     
-    // STEP 2: Clear LOCAL game state (both players)
+    // STEP 2: Increment round number FIRST (before clearing anything)
+    gameState.currentRound++;
+    
+    // STEP 3: Clear LOCAL game state (both players)
     gameState.myScore = null;
     gameState.myTag = null;
     gameState.otherScore = null;
@@ -6872,7 +6875,7 @@ function formatDate(timestamp) {
       gameState.reviewInterval = null;
     }
     
-    // STEP 2.5: Clear UI state (question blocks, timers, messages)
+    // STEP 4: Clear UI state (question blocks, timers, messages)
     const questionsContainer = document.getElementById('questions-container');
     if (questionsContainer) {
       questionsContainer.innerHTML = '';
@@ -6902,39 +6905,61 @@ function formatDate(timestamp) {
     
     console.log('✅ UI state cleared for new round');
     
-    // STEP 3: Increment round number
-    gameState.currentRound++;
-    
-    // STEP 4: Update session (if exists)
+    // STEP 5: Update session (if exists)
     if (userState.sessionId && !userState.isAnonymous) {
       await statsManager.incrementSessionRound(userState.sessionId);
     }
     
-    // STEP 5: Clear DATABASE room data (ONLY if creator)
+    // STEP 6: ONLY CREATOR clears database (with proper sequencing)
     if (isCreator && window.db && gameState.roomCode) {
       console.log('🗑️ Creator clearing old round data...');
       
+      // Add a small delay to ensure other player has saved their stats
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Clear old round data
       await Promise.all([
         window.db.ref(`rooms/${gameState.roomCode}/questions`).remove(),
         window.db.ref(`rooms/${gameState.roomCode}/answers`).remove(),
-        window.db.ref(`rooms/${gameState.roomCode}/gameState`).remove(),
-        window.db.ref(`rooms/${gameState.roomCode}/settings/requiredQuestionCount`).remove()
+        window.db.ref(`rooms/${gameState.roomCode}/acceptances`).remove(),
+        window.db.ref(`rooms/${gameState.roomCode}/rejections`).remove()
       ]);
       
-      // Reset to default
-      gameState.requiredQuestionCount = 5;
+      // Update round number in database
+      await window.db.ref(`rooms/${gameState.roomCode}/settings`).update({
+        currentRound: gameState.currentRound,
+        lastRoundStarted: Date.now()
+      });
       
       console.log('✅ Room data cleared by creator');
     }
     
-    // STEP 6: Reset our game state in DB
-    await dbManager.updateGameState(GAME_STATES.SETUP);
+    // STEP 7: Clear gameState nodes for BOTH players (each player clears their own)
+    if (window.db && gameState.roomCode) {
+      await window.db.ref(`rooms/${gameState.roomCode}/gameState/${gameState.playerName}`).remove();
+    }
     
-    // STEP 7: Route to appropriate screen
+    // STEP 8: Wait for creator to finish setup if we're the joiner
+    if (!isCreator) {
+      // Small delay to let creator finish database cleanup
+      await new Promise(resolve => setTimeout(resolve, 1500));
+    }
+    
+    // STEP 9: Reset our game state in DB
+    await dbManager.updateGameState(GAME_STATES.SETUP, {
+      round: gameState.currentRound
+    });
+    
+    // STEP 10: Route to appropriate screen
     if (isCreator) {
       // Creator chooses question count
       console.log('📋 Creator → Question Setup');
       gameManager.showSection('question-setup-section');
+      
+      // Reset question count to default
+      document.getElementById('questionCount').value = '5';
+      gameState.requiredQuestionCount = 5;
+      
       utils.showNotification(`🔄 Round ${gameState.currentRound} - Choose number of questions!`);
       
     } else {
