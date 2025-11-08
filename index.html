@@ -7185,7 +7185,7 @@ function formatDate(timestamp) {
     document.execCommand('copy');
     document.body.removeChild(textArea);
     utils.showNotification('✅ Room code copied!');
-  });
+  }); // ← ADD THIS CLOSING PARENTHESIS
 }
 
 window.copyRoomCode = copyRoomCode;
