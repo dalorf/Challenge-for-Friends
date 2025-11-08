@@ -2586,18 +2586,21 @@ async performReconnect(session) {
   this.updateAuthUI();
   
   // Wait for DOM to be fully ready
-  await new Promise(resolve => setTimeout(resolve, 100));
-  
-  const authSection = document.getElementById('auth-section');
-  const activeSection = document.querySelector('.section:not(.hidden)');
-  const inActiveGame = activeSection && activeSection.id !== 'auth-section';
-  
-  if (!inActiveGame && authSection) {
-    this.showRoomControls();
-    console.log('✅ Room controls shown after auth');
-  } else {
-    console.log('ℹ️ Skipped room controls - user in active game');
-  }
+await new Promise(resolve => setTimeout(resolve, 200)); // ← Changed from 100 to 200
+
+const authSection = document.getElementById('auth-section');
+const activeSection = document.querySelector('.section:not(.hidden)');
+const inActiveGame = activeSection && activeSection.id !== 'auth-section';
+
+// Also check that auth section is actually visible
+const authSectionVisible = authSection && !authSection.classList.contains('hidden');
+
+if (!inActiveGame && authSectionVisible) {
+  this.showRoomControls();
+  console.log('✅ Room controls shown after auth');
+} else {
+  console.log('ℹ️ Skipped room controls - user in active game or auth section hidden');
+}
   
   // Log for debugging
   console.log('User authenticated:', {
@@ -2635,22 +2638,21 @@ async performReconnect(session) {
     return;
   }
   
-  // Hide auth prompt with smooth transition
-  if (authPrompt) {
-    authPrompt.style.opacity = '0';
-    authPrompt.style.transition = 'opacity 0.3s ease';
-    setTimeout(() => {
-      authPrompt.classList.add('hidden');
-      authPrompt.style.display = 'none';
-    }, 300);
-  }
-  
-  // Show room controls with forced visibility
-  roomControls.classList.remove('hidden');
-  roomControls.style.display = 'block';
-  roomControls.style.visibility = 'visible';
-  roomControls.style.opacity = '1';
-  roomControls.style.pointerEvents = 'auto';
+ // Hide auth prompt immediately (no animation needed)
+if (authPrompt) {
+  authPrompt.classList.add('hidden');
+  authPrompt.style.display = 'none';
+}
+
+// Show room controls with forced visibility
+roomControls.classList.remove('hidden');
+roomControls.style.display = 'block';
+roomControls.style.visibility = 'visible';
+roomControls.style.opacity = '1';
+roomControls.style.pointerEvents = 'auto';
+
+// Force a reflow to ensure styles are applied
+roomControls.offsetHeight; // ← ADD THIS LINE (force browser to render)
   
   // Pre-fill name if available
   const playerNameInput = document.getElementById('playerName');
@@ -2665,35 +2667,36 @@ async performReconnect(session) {
   if (roomError) roomError.classList.add('hidden');
   
   // Smart focus logic with better timing
-  setTimeout(() => {
-    // Only auto-focus if user isn't already typing somewhere
-    const activeElement = document.activeElement;
-    const isUserTyping = activeElement && 
-                         (activeElement.tagName === 'INPUT' || 
-                          activeElement.tagName === 'TEXTAREA');
-    
-    if (isUserTyping) {
-      console.log('User already typing, skipping auto-focus');
-      return;
+setTimeout(() => {
+  // Only auto-focus if user isn't already typing somewhere
+  const activeElement = document.activeElement;
+  const isUserTyping = activeElement && 
+                       (activeElement.tagName === 'INPUT' || 
+                        activeElement.tagName === 'TEXTAREA');
+  
+  if (isUserTyping) {
+    console.log('User already typing, skipping auto-focus');
+    return;
+  }
+  
+  // Get fresh references (don't rely on closure)
+  const playerNameInput = document.getElementById('playerName');
+  const roomCodeInput = document.getElementById('roomCode');
+  
+  // If name is pre-filled, focus on room code field
+  // If name is empty, focus on name field
+  if (playerNameInput && roomCodeInput) {
+    if (playerNameInput.value && playerNameInput.value.trim().length > 0) {
+      // Name already filled - focus on room code
+      roomCodeInput.focus();
+      roomCodeInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } else {
+      // Name empty - focus on name field
+      playerNameInput.focus();
+      playerNameInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
-    
-    // If name is pre-filled, focus on room code field
-    // If name is empty, focus on name field
-    if (playerNameInput) {
-      if (playerNameInput.value && playerNameInput.value.trim().length > 0) {
-        // Name already filled - focus on room code
-        const roomCodeInput = document.getElementById('roomCode');
-        if (roomCodeInput) {
-          roomCodeInput.focus();
-          roomCodeInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-      } else {
-        // Name empty - focus on name field
-        playerNameInput.focus();
-        playerNameInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
-    }
-  }, 400);
+  }
+}, 500); // ← Changed from 400 to 500ms
   
   console.log('✅ Room controls shown and visible');
 },
@@ -4341,9 +4344,8 @@ try {
       );
     }, 500);
     
-    // Auto-select room code for easy copying
-    const roomCodeInput = document.getElementById('roomCode');
-    if (roomCodeInput && roomCodeInput.value) {
+    // Auto-select room code for easy copying (reuse existing variable)
+if (roomCodeInput && roomCodeInput.value) {
       setTimeout(() => {
         roomCodeInput.select();
       }, 1000);
@@ -6700,12 +6702,14 @@ function formatDate(timestamp) {
 
     // Event Listeners
     document.addEventListener('DOMContentLoaded', function() {
-      themeManager.init();
+  themeManager.init();
+  
+  // Mark that DOM is ready IMMEDIATELY
+  window.dalorfInitialized = true; // ← MOVE THIS UP HERE
 
-      // Initialize auth and check for existing session
-      authManager.init().then(() => {
-        // Mark that initialization is complete
-      window.dalorfInitialized = true;
+  // Initialize auth and check for existing session
+  authManager.init().then(() => {
+    // Check if user wants to reconnect to game
         // Check if user wants to reconnect to game
         if (userState.userId) {
           sessionManager.attemptReconnect();
