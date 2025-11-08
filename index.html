@@ -4870,13 +4870,25 @@ try {
       },
 
       showSection(sectionId) {
-  document.querySelectorAll('.section').forEach(section => {
-    section.classList.add('hidden');
-  });
-  
-  const targetSection = document.getElementById(sectionId);
-  if (targetSection) {
-    targetSection.classList.remove('hidden');
+      // Safety check: Don't show join/auth screens if game is active
+      if ((sectionId === 'auth-section' || sectionId === 'waiting-acceptance-section') && 
+          gameState.roomCode && gameState.playerName) {
+        const currentState = document.querySelector('.section:not(.hidden)')?.id;
+        const activeGameStates = ['question-section', 'answer-section', 'result-section', 'waiting-section'];
+        
+        if (activeGameStates.includes(currentState)) {
+          console.warn('⚠️ Prevented navigation to', sectionId, 'while game is active');
+          return; // Don't navigate away from active game
+        }
+      }
+      
+      document.querySelectorAll('.section').forEach(section => {
+        section.classList.add('hidden');
+      });
+      
+      const targetSection = document.getElementById(sectionId);
+      if (targetSection) {
+        targetSection.classList.remove('hidden');
     
     // Auto-focus first available input
     setTimeout(() => {
@@ -5739,18 +5751,31 @@ if (currentCount >= gameState.requiredQuestionCount * APP_CONFIG.MAX_QUESTIONS_M
           const acceptance = snapshot.val();
           
           if (acceptance && acceptance.accepted) {
-            // Clean up listeners
-            acceptanceRef.off('value', acceptanceListener);
-            if (gameState.rejectionListener) {
-              gameState.rejectionListener.off();
-            }
+      // Clean up listeners
+      acceptanceRef.off('value', acceptanceListener);
+      if (gameState.rejectionListener) {
+        gameState.rejectionListener.off();
+      }
+      
+      // ========== ADD THESE LINES HERE ==========
+      // Clear the timeout as well
+      if (gameState.joinRequestTimeout) {
+        clearTimeout(gameState.joinRequestTimeout);
+        gameState.joinRequestTimeout = null;
+      }
+      // =========================================
             
             // Update game state
             dbManager.updateGameState(GAME_STATES.SETUP);
             dbManager.listenForGameStateChanges();
             
             // Save session
-            sessionManager.saveSession();
+    sessionManager.saveSession();
+
+    // ========== ADD THESE LINES HERE ==========
+    // Mark that we've joined successfully to prevent re-triggering
+    gameState.hasJoinedSuccessfully = true;
+    // =========================================
             
             utils.showNotification('✅ Join request accepted! Waiting for game setup...');
             utils.announceToScreenReader('Join request accepted');
