@@ -6806,72 +6806,101 @@ function formatDate(timestamp) {
     window.formatDate = formatDate;
 
     async function startNewRound() {
-      if (!gameState.opponentUserId) {
-        utils.showNotification('Cannot start new round - opponent info missing');
-        return;
-      }
-      
-      // Clear previous game data
-      gameState.myScore = null;
-      gameState.myTag = null;
-      gameState.otherScore = null;
-      gameState.otherTag = null;
-      gameState.reviewCompleted = false;
-      gameState.isReviewPaused = false;
-      gameState.reviewEndTime = null;
-      
-      if (gameState.reviewInterval) {
-        clearInterval(gameState.reviewInterval);
-        gameState.reviewInterval = null;
-      }
-      
-      gameState.currentRound++;
-      
-      try {
-        // Check if we're the room creator
-        const settingsSnapshot = await window.db.ref(`rooms/${gameState.roomCode}/settings`).once('value');
-        const settings = settingsSnapshot.val();
-        const isCreator = settings && settings.creator === gameState.playerName;
-        
-        // Clear old room data for fresh round
-        if (window.db && gameState.roomCode) {
-          await window.db.ref(`rooms/${gameState.roomCode}/questions`).remove();
-          await window.db.ref(`rooms/${gameState.roomCode}/answers`).remove();
-          await window.db.ref(`rooms/${gameState.roomCode}/gameState`).remove();
-          
-          // If we're the creator, also clear the question count requirement
-          if (isCreator) {
-            await window.db.ref(`rooms/${gameState.roomCode}/settings/requiredQuestionCount`).remove();
-            gameState.requiredQuestionCount = 5; // Reset to default
-          }
-        }
-        
-        if (userState.sessionId) {
-          await statsManager.incrementSessionRound(userState.sessionId);
-        }
-        
-        // Reset game state
-        await dbManager.updateGameState(GAME_STATES.SETUP);
-        
-        // Show appropriate screen based on role
-        if (isCreator) {
-          gameManager.showSection('question-setup-section');
-          utils.showNotification(`🔄 Round ${gameState.currentRound} - Select question count!`);
-        } else {
-          gameManager.showSection('waiting-section');
-          document.getElementById('waiting-section').innerHTML = 
-            '<div class="loading-indicator">⏳ Waiting for room creator to set up the next round...</div>';
-          gameManager.listenForRoomUpdates();
-          utils.showNotification(`🔄 Round ${gameState.currentRound} - Waiting for setup...`);
-        }
-        
-      } catch (error) {
-        console.error('Error starting new round:', error);
-        utils.showNotification('Failed to start new round. Please refresh.');
-      }
+  if (!gameState.opponentUserId) {
+    utils.showNotification('Cannot start new round - opponent info missing');
+    return;
+  }
+  
+  try {
+    // ⚡ STEP 1: Check creator status BEFORE clearing anything
+    const settingsSnapshot = await window.db.ref(`rooms/${gameState.roomCode}/settings`).once('value');
+    const settings = settingsSnapshot.val();
+    
+    if (!settings) {
+      throw new Error('Room settings not found');
     }
+    
+    const isCreator = settings.creator === gameState.playerName;
+    
+    console.log('🔄 Starting new round:', {
+      player: gameState.playerName,
+      isCreator: isCreator,
+      creator: settings.creator,
+      currentRound: gameState.currentRound,
+      nextRound: gameState.currentRound + 1
+    });
+    
+    // STEP 2: Clear LOCAL game state (both players)
+    gameState.myScore = null;
+    gameState.myTag = null;
+    gameState.otherScore = null;
+    gameState.otherTag = null;
+    gameState.reviewCompleted = false;
+    gameState.isReviewPaused = false;
+    gameState.reviewEndTime = null;
+    
+    if (gameState.reviewInterval) {
+      clearInterval(gameState.reviewInterval);
+      gameState.reviewInterval = null;
+    }
+    
+    // STEP 3: Increment round number
+    gameState.currentRound++;
+    
+    // STEP 4: Update session (if exists)
+    if (userState.sessionId && !userState.isAnonymous) {
+      await statsManager.incrementSessionRound(userState.sessionId);
+    }
+    
+    // STEP 5: Clear DATABASE room data (ONLY if creator)
+    if (isCreator && window.db && gameState.roomCode) {
+      console.log('🗑️ Creator clearing old round data...');
+      
+      await Promise.all([
+        window.db.ref(`rooms/${gameState.roomCode}/questions`).remove(),
+        window.db.ref(`rooms/${gameState.roomCode}/answers`).remove(),
+        window.db.ref(`rooms/${gameState.roomCode}/gameState`).remove(),
+        window.db.ref(`rooms/${gameState.roomCode}/settings/requiredQuestionCount`).remove()
+      ]);
+      
+      // Reset to default
+      gameState.requiredQuestionCount = 5;
+      
+      console.log('✅ Room data cleared by creator');
+    }
+    
+    // STEP 6: Reset our game state in DB
+    await dbManager.updateGameState(GAME_STATES.SETUP);
+    
+    // STEP 7: Route to appropriate screen
+    if (isCreator) {
+      // Creator chooses question count
+      console.log('📋 Creator → Question Setup');
+      gameManager.showSection('question-setup-section');
+      utils.showNotification(`🔄 Round ${gameState.currentRound} - Choose number of questions!`);
+      
+    } else {
+      // Joiner waits for creator to setup
+      console.log('⏳ Joiner → Waiting for setup');
+      gameManager.showSection('waiting-section');
+      document.getElementById('waiting-section').innerHTML = 
+        '<div class="loading-indicator">' +
+        `⏳ Waiting for ${settings.creator} to set up Round ${gameState.currentRound}...<br>` +
+        '<span style="font-size: 0.9rem; opacity: 0.8; margin-top: 8px; display: block;">They are choosing the number of questions</span>' +
+        '</div>';
+      
+      // Listen for room updates
+      gameManager.listenForRoomUpdates();
+      utils.showNotification(`🔄 Round ${gameState.currentRound} - Waiting for ${settings.creator}...`);
+    }
+    
+  } catch (error) {
+    console.error('❌ Error starting new round:', error);
+    utils.showNotification('Failed to start new round. Please refresh the page.');
+  }
+}
 
-   window.showAboutName = showAboutName;
+    window.showAboutName = showAboutName;
     window.authManager = authManager;
     window.statsManager = statsManager;
     window.modalManager = modalManager;
